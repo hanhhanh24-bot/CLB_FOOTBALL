@@ -457,11 +457,16 @@ function payrollOf(st,ym){
  const ex=rec.expenseId?DB.expenses.find(e=>e.id===rec.expenseId):null;
  return{st,cls,planned,actual,fixed,perS,allowance,bonus,total:fixed+perS+allowance+bonus,paid:!!ex,ex,rec}
 }
-function payPayroll(stId,ym,date){const st=DB.staff.find(s=>s.id===stId),p=payrollOf(st,ym);if(p.paid||p.total<=0)return false;
+function payrollExpense(p,ym,date){
+ const st=p.st;
+ return {id:uid('e'),code:exCode(date),date,catId:payCat(st),content:`Lương ${ymShort(ym)} – ${st.name} (${st.role})`,amount:p.total,classId:p.cls.length===1?p.cls[0].id:'',payee:st.name,payer:'Quản lý',note:'Tự động từ bảng lương',source:'payroll',sourceKey:`pay:${st.id}:${ym}`};
+}
+function payPayroll(stId,ym,date){
+ const st=DB.staff.find(s=>s.id===stId),p=payrollOf(st,ym);if(p.paid||p.total<=0)return false;
  const rec=DB.payroll[stId+'|'+ym]=DB.payroll[stId+'|'+ym]||{};
- const e={id:uid('e'),code:exCode(date),date,catId:payCat(st),content:`Lương ${ymShort(ym)} – ${st.name} (${st.role})`,amount:p.total,classId:p.cls.length===1?p.cls[0].id:'',payee:st.name,payer:'Quản lý',note:'Tự động từ bảng lương',source:'payroll',sourceKey:`pay:${stId}:${ym}`};
- DB.expenses.push(e);rec.expenseId=e.id;rec.paidDate=date;return true}
-function unpayPayroll(stId,ym){const rec=DB.payroll[stId+'|'+ym];if(!rec||!rec.expenseId)return;DB.expenses=DB.expenses.filter(e=>e.id!==rec.expenseId);rec.expenseId=null;rec.paidDate=''}
+ const e=payrollExpense(p,ym,date);
+ DB.expenses.push(e);rec.expenseId=e.id;rec.paidDate=date;return true
+}
 function syncPayroll(stId,ym){const st=DB.staff.find(s=>s.id===stId),p=payrollOf(st,ym);if(!p.ex)return;p.ex.amount=p.total;p.ex.classId=p.cls.length===1?p.cls[0].id:'';p.ex.content=`Lương ${ymShort(ym)} – ${st.name} (${st.role})`}
 
 /* ---------- sample data ---------- */
@@ -522,16 +527,45 @@ const pn=v=>`<span class="${v<0?'neg':'pos'}">${money(v)}</span>`;
 const phead=(t,sub,acts='')=>`<div class="print-head"><h2 style="margin:0;color:#075B35">ĐĂNG KHOA SPORT – ${esc(t)}</h2><div>${esc(sub)}</div></div><div class="phead"><div><h1>${esc(t)}</h1><p>${sub}</p></div><div class="acts">${acts}</div></div>`;
 
 /* ---------- modal & forms ---------- */
+const moneyDigits=value=>value.replace(/[.\s]/g,'');
+const groupMoney=value=>String(value).replace(/\B(?=(\d{3})+(?!\d))/g,'.');
+function formatMoneyInput(input){
+ const value=input.value, digits=moneyDigits(value);
+ const valid=/^\d*$/.test(digits)&&Number.isSafeInteger(Number(digits));
+ input.setCustomValidity(valid?'':'Nhập số tiền VNĐ nguyên, từ 0 trở lên.');
+ if(!valid)return;
+ const formatted=groupMoney(digits.replace(/^0+(?=\d)/,''));
+ if(value===formatted)return;
+ const after=moneyDigits(value.slice(input.selectionStart??value.length)).length;
+ input.value=formatted;
+ let caret=formatted.length,remaining=after;
+ while(caret>0&&remaining>0){if(formatted[--caret]!=='.')remaining--}
+ input.setSelectionRange(caret,caret);
+}
+function payrollButton(p){
+ if(p.paid&&canAct('payUndo'))return `<button type="button" class="btn red" data-act="payUndo" data-id="${esc(p.st.id)}">Hoàn tác chi lương</button>`;
+ if(!p.paid&&canAct('payDo'))return `<button type="button" class="btn primary" ${p.total>0?`data-act="payDo" data-id="${esc(p.st.id)}"`:'disabled title="Tổng lương phải lớn hơn 0"'}>Chi lương</button>`;
+ return '';
+}
 function fld(name,label,val='',o={}){const t=o.type||'text',req=o.req?'required':'';let inp;
  if(t==='select')inp=`<select name="${name}" ${req} ${o.attrs||''}>${(o.options||[]).map(([v,l])=>`<option value="${esc(v)}" ${String(v)===String(val)?'selected':''}>${esc(l)}</option>`).join('')}</select>`;
+ else if(t==='money')inp=`<input type="text" inputmode="numeric" data-money name="${name}" value="${esc(groupMoney(val??''))}" ${req} placeholder="${esc(o.ph||'')}">`;
  else if(t==='textarea')inp=`<textarea name="${name}" rows="2" ${o.attrs||''}>${esc(val)}</textarea>`;
  else inp=`<input type="${t}" name="${name}" value="${esc(val)}" ${req} ${t==='number'?'min="0" step="1"':''} placeholder="${esc(o.ph||'')}" ${o.attrs||''}>`;
  return`<label class="fld ${o.cls||''}"><span>${label}${o.req?' <i>*</i>':''}</span>${inp}${o.help?`<span class="help">${o.help}</span>`:''}</label>`}
 function modal(title,body,onOk,o={}){
  const m=$('#modal');
- m.innerHTML=`<div class="mbox${o.wide?' wide':''}"><div class="mh"><b>${title}</b><button class="ib" type="button" data-act="mclose">${ic('x')}</button></div><form id="mform" autocomplete="off"><div class="mb">${body}</div><div class="mf"><button type="button" class="btn ghost" data-act="mclose">Hủy</button><button type="submit" class="btn primary">${o.ok||'Lưu'}</button></div></form></div>`;
+ m.innerHTML=`<div class="mbox${o.wide?' wide':''}"><div class="mh"><b>${title}</b><button class="ib" type="button" data-act="mclose">${ic('x')}</button></div><form id="mform" autocomplete="off"><div class="mb">${body}</div><div class="mf">${o.actions||'<button type="button" class="btn ghost" data-act="mclose">Hủy</button>'}<button type="submit" class="btn primary">${o.ok||'Lưu'}</button></div></form></div>`;
  m.classList.add('show');const f=$('#mform');
- f.onsubmit=e=>{e.preventDefault();const d={};for(const[k,v]of new FormData(f))d[k]=k in d?[].concat(d[k],v):v;if(onOk(d,f)!==false)closeModal()};
+ f.onsubmit=e=>{e.preventDefault();const data=new FormData(f);
+  for(const field of f.querySelectorAll('[data-money]')){
+   formatMoneyInput(field);
+   if(!field.reportValidity())return;
+   data.set(field.name,moneyDigits(field.value));
+  }
+  const d={};for(const[k,v]of data)d[k]=k in d?[].concat(d[k],v):v;
+  if(onOk(d,f)!==false&&f.isConnected)closeModal()};
+ f.addEventListener('input',e=>{if(e.target.matches('[data-money]'))formatMoneyInput(e.target)});
  if(o.init)o.init(f);const first=f.querySelector('input:not([type=checkbox]):not([type=hidden]),select');if(first)first.focus()}
 function closeModal(){const m=$('#modal');m.classList.remove('show');m.innerHTML=''}
 const ask=msg=>window.confirm(msg);
@@ -626,7 +660,7 @@ function classForm(c){
  const coaches=DB.staff.filter(s=>s.role!=='Trợ giảng'),asst=DB.staff.filter(s=>s.role==='Trợ giảng');
  const o=a=>[['','— Chưa phân công —'],...a.map(s=>[s.id,`${s.name} (${s.code})`])];
  const days=[1,2,3,4,5,6,0].map(d=>`<label class="chk"><input type="checkbox" name="days" value="${d}" ${(c.days||[]).includes(d)?'checked':''}>${DOW[d]}</label>`).join('');
- return fld('code','Mã lớp',c.code,{req:1})+fld('name','Tên lớp',c.name,{req:1})+fld('ageGroup','Nhóm tuổi',c.ageGroup,{ph:'VD: 6–8 tuổi'})+fld('fee','Học phí / tháng (đ)',c.fee||0,{type:'number',req:1})
+ return fld('code','Mã lớp',c.code,{req:1})+fld('name','Tên lớp',c.name,{req:1})+fld('ageGroup','Nhóm tuổi',c.ageGroup,{ph:'VD: 6–8 tuổi'})+fld('fee','Học phí / tháng (đ)',c.fee||0,{type:'money',req:1})
  +fld('coachId','HLV chính',c.coachId,{type:'select',options:o(coaches)})+fld('assistantId','Trợ giảng',c.assistantId,{type:'select',options:o(asst)})
  +fld('venue','Địa điểm sân',c.venue,{cls:'full'})+`<div class="fld full"><span>Ngày học trong tuần <i>*</i></span><div>${days}</div></div>`
  +fld('start','Giờ bắt đầu',c.start||'17:00',{type:'time',req:1})+fld('end','Giờ kết thúc',c.end||'18:30',{type:'time',req:1})
@@ -656,7 +690,7 @@ PAGES.students={t:'Học viên',i:'users',body:stuBody,r(){
  +`<div class="fbar"><input type="search" placeholder="Tìm tên, mã, SĐT…" value="${esc(f.q||'')}" data-f="students.q"><select data-f="students.cls"><option value="">Tất cả lớp</option>${DB.classes.map(c=>`<option value="${c.id}" ${f.cls===c.id?'selected':''}>${esc(c.code+' · '+c.name)}</option>`).join('')}</select><select data-f="students.st"><option value="">Mọi trạng thái</option>${['Đang học','Bảo lưu','Nghỉ học'].map(x=>`<option ${f.st===x?'selected':''}>${x}</option>`).join('')}</select></div><div id="listBody">${stuBody()}</div>`}};
 function stuForm(s){return fld('code','Mã học viên',s.code,{req:1})+fld('name','Họ tên',s.name,{req:1})+fld('dob','Ngày sinh',s.dob,{type:'date',req:1})+fld('gender','Giới tính',s.gender||'Nam',{type:'select',options:[['Nam','Nam'],['Nữ','Nữ']]})
  +fld('parent','Họ tên phụ huynh',s.parent)+fld('phone','SĐT phụ huynh',s.phone,{req:1})+fld('joinDate','Ngày nhập học',s.joinDate,{type:'date',req:1})
- +fld('classId','Lớp đang học',s.classId,{type:'select',options:clsOpts('— Chọn lớp —'),req:1})+fld('fee','Học phí / tháng (đ)',s.fee,{type:'number',req:1,help:'Có thể khác học phí lớp (giảm giá, anh chị em…)'})+fld('perWeek','Số buổi học / tuần',s.perWeek||1,{type:'number',req:1,attrs:'min="1" max="7"'})}
+ +fld('classId','Lớp đang học',s.classId,{type:'select',options:clsOpts('— Chọn lớp —'),req:1})+fld('fee','Học phí / tháng (đ)',s.fee,{type:'money',req:1,help:'Có thể khác học phí lớp (giảm giá, anh chị em…)'})+fld('perWeek','Số buổi học / tuần',s.perWeek||1,{type:'number',req:1,attrs:'min="1" max="7"'})}
 const stuActions=s=>`<div class="fld full"><span>Thao tác khác</span><div class="acts"><button type="button" class="btn sm ghost" data-act="stuMove" data-id="${s.id}">${ic('swap',14)}Chuyển lớp</button>${s.status==='Đang học'?`<button type="button" class="btn sm ghost" data-act="stuSt" data-id="${s.id}" data-s="Bảo lưu">${ic('pause',14)}Bảo lưu</button>`:`<button type="button" class="btn sm ghost" data-act="stuSt" data-id="${s.id}" data-s="Đang học">${ic('refresh',14)}Cho học lại</button>`}${s.status!=='Nghỉ học'?`<button type="button" class="btn sm ghost" data-act="stuSt" data-id="${s.id}" data-s="Nghỉ học">${ic('x',14)}Nghỉ học</button>`:''}<button type="button" class="btn sm red" data-act="stuDel" data-id="${s.id}">${ic('trash',14)}Xóa học viên</button></div></div>`
 
 /* ---- Attendance ---- */
@@ -717,7 +751,7 @@ function openReceipt(r){
  +fld('studentId','Học viên',r.studentId||'',{type:'select',options:[['','— Không chọn —'],...DB.students.map(s=>[s.id,`${s.name} (${s.code})`])]})
  +`<label class="fld" id="tuiWrap"><span>Khoản học phí cần thu <i>*</i></span><select name="tuitionId"></select></label>`
  +`<label class="fld" id="catWrap"><span>Nhóm thu khác</span><select name="otherCat">${OTHER_CATS.map(x=>`<option ${x===r.otherCat?'selected':''}>${x}</option>`).join('')}</select></label>`
- +fld('classId','Lớp',r.classId||'',{type:'select',options:clsOpts('— Không gắn lớp —')})+fld('amount','Số tiền thu (đ)',r.amount||'',{type:'number',req:1})
+ +fld('classId','Lớp',r.classId||'',{type:'select',options:clsOpts('— Không gắn lớp —')})+fld('amount','Số tiền thu (đ)',r.amount||'',{type:'money',req:1})
  +fld('method','Hình thức thanh toán',r.method||'Tiền mặt',{type:'select',options:METHODS.map(x=>[x,x])})+fld('payer','Người nộp',r.payer||'')
  +fld('content','Nội dung thu',r.content||'',{cls:'full',req:1})+fld('note','Ghi chú',r.note||'',{cls:'full'});
  modal(isEdit?'Sửa phiếu thu '+esc(r.code):'Thêm phiếu thu',body,d=>{
@@ -729,7 +763,7 @@ function openReceipt(r){
   const el=f.elements;
   const fillT=()=>{const sid=el.studentId.value,P=paidMap();const list=DB.tuitions.filter(t=>t.studentId===sid&&(t.id===r.tuitionId||remaining(t,r.id)>0)).sort(by(t=>t.ym));el.tuitionId.innerHTML=list.map(t=>`<option value="${t.id}">${ymShort(t.ym)} – còn ${money(remaining(t,r.id))}</option>`).join('')||'<option value="">(Không có khoản phải thu – hãy chọn học viên)</option>';if(r.tuitionId&&list.some(t=>t.id===r.tuitionId))el.tuitionId.value=r.tuitionId};
   const tog=()=>{const t=el.rtype.value==='tuition';$('#tuiWrap').style.display=t?'':'none';$('#catWrap').style.display=t?'none':''};
-  const pickT=(fill)=>{const t=DB.tuitions.find(x=>x.id===el.tuitionId.value);if(t&&fill){el.amount.value=remaining(t,r.id);el.classId.value=t.classId;el.content.value=`Học phí ${ymShort(t.ym)}`}};
+  const pickT=(fill)=>{const t=DB.tuitions.find(x=>x.id===el.tuitionId.value);if(t&&fill){el.amount.value=groupMoney(remaining(t,r.id));formatMoneyInput(el.amount);el.classId.value=t.classId;el.content.value=`Học phí ${ymShort(t.ym)}`}};
   fillT();tog();
   el.rtype.onchange=()=>{tog();if(el.rtype.value==='other'&&!el.content.value)el.content.value=el.otherCat.value};
   el.studentId.onchange=()=>{const s=DB.students.find(x=>x.id===el.studentId.value);fillT();if(s){if(!el.payer.value)el.payer.value=s.parent;el.classId.value=s.classId}pickT(true)};
@@ -760,9 +794,9 @@ PAGES.expenses={t:'Chi phí',i:'down',body:expBody,r(){
  const filt=tab==='list'?`<div class="fbar"><input type="search" placeholder="Tìm phiếu chi…" value="${esc(f.q||'')}" data-f="expenses.q">${voidSel('expenses')}<select data-f="expenses.grp"><option value="">Mọi nhóm</option>${Object.keys(GROUPS).map(g=>`<option value="${g}" ${f.grp===g?'selected':''}>${GROUPS[g]}</option>`).join('')}</select><select data-f="expenses.cat"><option value="">Mọi danh mục</option>${DB.expCats.map(c=>`<option value="${c.id}" ${f.cat===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}</select><select data-f="expenses.cls"><option value="">Mọi lớp</option><option value="_" ${f.cls==='_'?'selected':''}>Chi phí chung</option>${DB.classes.map(c=>`<option value="${c.id}" ${f.cls===c.id?'selected':''}>${esc(c.code)}</option>`).join('')}</select></div>`:'';
  return phead('Quản lý chi phí',`${ymLabel(ym)} · tổng chi <b>${money(mc.exp)}</b>`,acts)+tabs('expenses',[['list','Phiếu chi'],['rec','Chi phí định kỳ'],['cats','Danh mục chi phí']],'list')+filt+`<div id="listBody">${expBody()}</div>`}};
 function expForm(e){return fld('date','Ngày chi',e.date||defDate(),{type:'date',req:1})+`<label class="fld"><span>Danh mục <i>*</i></span>${catSelect('catId',e.catId||'san1')}</label>`
- +fld('content','Nội dung',e.content||'',{cls:'full',req:1})+fld('amount','Số tiền (đ)',e.amount||'',{type:'number',req:1})+fld('classId','Lớp liên quan',e.classId||'',{type:'select',options:clsOpts('— Chi phí chung —')})
+ +fld('content','Nội dung',e.content||'',{cls:'full',req:1})+fld('amount','Số tiền (đ)',e.amount||'',{type:'money',req:1})+fld('classId','Lớp liên quan',e.classId||'',{type:'select',options:clsOpts('— Chi phí chung —')})
  +fld('payee','Người nhận',e.payee||'')+fld('payer','Người thanh toán',e.payer||'Quản lý')+fld('note','Ghi chú',e.note||'',{cls:'full'})}
-function recForm(r){return fld('name','Tên khoản chi',r.name||'',{req:1,cls:'full'})+`<label class="fld"><span>Danh mục <i>*</i></span>${catSelect('catId',r.catId||'san1')}</label>`+fld('amount','Số tiền / 1 đơn vị (đ)',r.amount||'',{type:'number',req:1})
+function recForm(r){return fld('name','Tên khoản chi',r.name||'',{req:1,cls:'full'})+`<label class="fld"><span>Danh mục <i>*</i></span>${catSelect('catId',r.catId||'san1')}</label>`+fld('amount','Số tiền / 1 đơn vị (đ)',r.amount||'',{type:'money',req:1})
  +fld('cycle','Chu kỳ',r.cycle||'session',{type:'select',options:[['session','Theo buổi'],['week','Theo tuần'],['month','Theo tháng']],help:'Theo buổi: nhân số buổi học của lớp trong tháng. Theo tuần: nhân số tuần (số ngày Thứ Hai trong tháng).'})
  +fld('classId','Lớp áp dụng',r.classId||'',{type:'select',options:clsOpts('— Tất cả lớp / chi phí chung —')})+fld('payDay','Ngày thanh toán trong tháng',r.payDay||28,{type:'number',attrs:'min="1" max="31"'})+fld('payee','Người nhận',r.payee||'')
  +`<label class="fld"><span>Trạng thái</span><select name="active"><option value="1" ${r.active!==false?'selected':''}>Đang chạy</option><option value="0" ${r.active===false?'selected':''}>Tạm dừng</option></select></label>`}
@@ -776,13 +810,13 @@ PAGES.staff={t:'Nhân sự',i:'staff',r(){
   body=`<div class="card">${tbl(['Mã NS','Họ tên','SĐT','Chức vụ','Lớp phụ trách','Hình thức trả lương','>Mức lương','Trạng thái',''],rows)}</div>`;
  }else{
   const ps=DB.staff.filter(s=>s.active!==false||DB.payroll[s.id+'|'+ym]).map(s=>payrollOf(s,ym));
-  const rows=ps.map(p=>{const stale=p.paid&&p.ex.amount!==p.total;return`<tr class="clk" data-act="payDetail" data-id="${p.st.id}" title="Bấm để xem chi tiết từng buổi"><td><b>${esc(p.st.name)}</b><br><span class="muted">${esc(p.st.code)}</span></td><td>${esc(p.st.role)}</td><td>${p.cls.map(c=>esc(c.code)).join(', ')||'—'}</td><td class="r">${p.planned}</td><td class="r"><b>${p.actual}</b></td><td class="r">${money(p.fixed)}</td><td class="r">${money(p.perS)}</td><td class="r">${money(p.allowance)}</td><td class="r">${money(p.bonus)}</td><td class="r"><b>${money(p.total)}</b></td><td>${p.paid?B('Đã chi '+vnDate(p.rec.paidDate),'green'):p.total>0?B('Chưa thanh toán','amber'):B('Không phát sinh','gray')}${stale?'<br>'+B('Phiếu chi lệch: '+money(p.ex.amount),'red'):''}</td><td class="act">${ab('payExtra','edit','Phụ cấp / thưởng',`data-id="${p.st.id}"`)}${!p.paid&&p.total>0?ab('payDo','coin','Chi lương',`data-id="${p.st.id}"`,'pay'):''}${stale?ab('paySync','refresh','Cập nhật phiếu chi theo tổng lương',`data-id="${p.st.id}"`):''}${p.paid?ab('payUndo','x','Hoàn tác thanh toán',`data-id="${p.st.id}"`,'del'):''}</td></tr>`}).join('');
+  const rows=ps.map(p=>{const stale=p.paid&&p.ex.amount!==p.total;return`<tr class="clk" data-act="payDetail" data-id="${p.st.id}" title="Bấm để xem chi tiết từng buổi"><td><b>${esc(p.st.name)}</b><br><span class="muted">${esc(p.st.code)}</span></td><td>${esc(p.st.role)}</td><td>${p.cls.map(c=>esc(c.code)).join(', ')||'—'}</td><td class="r">${p.planned}</td><td class="r"><b>${p.actual}</b></td><td class="r">${money(p.fixed)}</td><td class="r">${money(p.perS)}</td><td class="r">${money(p.allowance)}</td><td class="r">${money(p.bonus)}</td><td class="r"><b>${money(p.total)}</b></td><td>${p.paid?B('Đã chi '+vnDate(p.rec.paidDate),'green'):p.total>0?B('Chưa thanh toán','amber'):B('Không phát sinh','gray')}${stale?'<br>'+B('Phiếu chi lệch: '+money(p.ex.amount),'red'):''}</td><td class="act">${ab('payExtra','edit','Phụ cấp / thưởng',`data-id="${p.st.id}"`)}${payrollButton(p)}${stale?ab('paySync','refresh','Cập nhật phiếu chi theo tổng lương',`data-id="${p.st.id}"`):''}</td></tr>`}).join('');
   body=`<div class="note info">Lương theo buổi = đơn giá × <b>số buổi thực tế</b> (buổi đã điểm danh). Khi bấm <b>Chi lương</b>, hệ thống tạo phiếu chi tương ứng nên lợi nhuận được cập nhật tự động; hoàn tác sẽ xóa phiếu chi đó. <b>Bấm vào dòng của từng người để xem chi tiết từng buổi dạy.</b></div><div class="card">${tbl(['Nhân sự','Chức vụ','Lớp','>Buổi dạy (lịch)','>Buổi thực tế','>Lương cố định','>Lương theo buổi','>Phụ cấp','>Thưởng','>Tổng lương','Thanh toán',''],rows,`<tr><td colspan="9">Tổng lương ${ymShort(ym)}</td><td class="r">${money(sum(ps,p=>p.total))}</td><td colspan="2">Đã chi: ${money(sum(ps.filter(p=>p.paid),p=>p.total))}</td></tr>`)}</div>`;
  }
  return phead('Quản lý HLV & Trợ giảng',`${DB.staff.length} nhân sự · ${ymLabel(ym)}`,`<button class="btn primary" data-act="stfAdd">${ic('plus',16)}Thêm nhân sự</button>`)+tabs('staff',[['list','Danh sách nhân sự'],['pay','Bảng lương tháng']],'list')+body}};
 function stfForm(s){return fld('code','Mã nhân sự',s.code,{req:1})+fld('name','Họ tên',s.name,{req:1})+fld('phone','Số điện thoại',s.phone)+fld('role','Chức vụ',s.role||'HLV chính',{type:'select',options:['HLV chính','HLV phụ','Trợ giảng'].map(x=>[x,x])})
  +fld('payType','Hình thức trả lương',s.payType||'session',{type:'select',options:Object.entries(PAYT)})+fld('active','Trạng thái',s.active===false?'0':'1',{type:'select',options:[['1','Đang làm'],['0','Đã nghỉ']]})
- +fld('fixedSalary','Lương cố định / tháng (đ)',s.fixedSalary||0,{type:'number'})+fld('sessionRate','Lương / buổi (đ)',s.sessionRate||0,{type:'number'})}
+ +fld('fixedSalary','Lương cố định / tháng (đ)',s.fixedSalary||0,{type:'money'})+fld('sessionRate','Lương / buổi (đ)',s.sessionRate||0,{type:'money'})}
 
 /* ---- Reports ---- */
 PAGES.reports={t:'Báo cáo tài chính',i:'chart',r(){
@@ -888,8 +922,8 @@ ACT.attSave=()=>{const c=DB.classes.find(x=>x.id===S.att.cid),date=S.att.date,ym
 ACT.attDel=()=>{if(!ask('Xóa điểm danh buổi này? Số buổi thực tế và lương theo buổi sẽ thay đổi.'))return;delete DB.attendance[attKey(S.att.cid,S.att.date)];commit('Đã xóa điểm danh')};
 /* tuition & receipts */
 ACT.tuiGen=()=>{const n=genTuition(cur());commit(n?`Đã tạo ${n} khoản học phí ${ymShort(cur())}`:'Tất cả học viên đã có khoản học phí tháng này')};
-ACT.tuiAdd=()=>{if(!DB.students.length){toast('Chưa có học viên','err');return}const s=DB.students[0];modal('Thêm khoản phải thu '+ymShort(cur()),fld('studentId','Học viên',s.id,{type:'select',options:DB.students.map(x=>[x.id,`${x.name} (${x.code})`]),cls:'full'})+fld('due','Số tiền phải đóng (đ)',s.fee,{type:'number',req:1})+fld('dueDate','Hạn đóng',dateOf(cur(),10),{type:'date',req:1}),v=>{if(DB.tuitions.some(t=>t.studentId===v.studentId&&t.ym===cur())){toast('Học viên đã có khoản học phí tháng này','err');return false}const st=DB.students.find(x=>x.id===v.studentId);DB.tuitions.push({id:uid('t'),studentId:st.id,classId:st.classId,ym:cur(),due:+v.due,dueDate:v.dueDate,note:''});commit('Đã thêm khoản phải thu')},{init:f=>{f.elements.studentId.onchange=()=>{const st=DB.students.find(x=>x.id===f.elements.studentId.value);if(st)f.elements.due.value=st.fee}}})};
-ACT.tuiEdit=d=>{const t=DB.tuitions.find(x=>x.id===d.id);modal('Sửa khoản học phí',fld('due','Số tiền phải đóng (đ)',t.due,{type:'number',req:1})+fld('dueDate','Hạn đóng',t.dueDate,{type:'date'}),v=>{const paid=paidMap()[t.id]||0;if(+v.due<paid){toast(`Không thể thấp hơn số đã đóng (${money(paid)})`,'err');return false}t.due=+v.due;t.dueDate=v.dueDate;commit('Đã cập nhật')})};
+ACT.tuiAdd=()=>{if(!DB.students.length){toast('Chưa có học viên','err');return}const s=DB.students[0];modal('Thêm khoản phải thu '+ymShort(cur()),fld('studentId','Học viên',s.id,{type:'select',options:DB.students.map(x=>[x.id,`${x.name} (${x.code})`]),cls:'full'})+fld('due','Số tiền phải đóng (đ)',s.fee,{type:'money',req:1})+fld('dueDate','Hạn đóng',dateOf(cur(),10),{type:'date',req:1}),v=>{if(DB.tuitions.some(t=>t.studentId===v.studentId&&t.ym===cur())){toast('Học viên đã có khoản học phí tháng này','err');return false}const st=DB.students.find(x=>x.id===v.studentId);DB.tuitions.push({id:uid('t'),studentId:st.id,classId:st.classId,ym:cur(),due:+v.due,dueDate:v.dueDate,note:''});commit('Đã thêm khoản phải thu')},{init:f=>{f.elements.studentId.onchange=()=>{const st=DB.students.find(x=>x.id===f.elements.studentId.value);if(st)f.elements.due.value=st.fee}}})};
+ACT.tuiEdit=d=>{const t=DB.tuitions.find(x=>x.id===d.id);modal('Sửa khoản học phí',fld('due','Số tiền phải đóng (đ)',t.due,{type:'money',req:1})+fld('dueDate','Hạn đóng',t.dueDate,{type:'date'}),v=>{const paid=paidMap()[t.id]||0;if(+v.due<paid){toast(`Không thể thấp hơn số đã đóng (${money(paid)})`,'err');return false}t.due=+v.due;t.dueDate=v.dueDate;commit('Đã cập nhật')})};
 ACT.tuiDel=d=>{const t=DB.tuitions.find(x=>x.id===d.id);if((paidMap()[t.id]||0)>0){toast('Khoản này đã có phiếu thu – hãy xóa phiếu thu trước','err');return}if(!ask('Xóa khoản học phí này?'))return;DB.tuitions=DB.tuitions.filter(x=>x.id!==t.id);commit('Đã xóa')};
 ACT.rcAdd=()=>openReceipt({});
 ACT.rcOther=()=>openReceipt({rtype:'other',otherCat:'Đồng phục',content:'Đồng phục'});
@@ -932,10 +966,56 @@ ACT.payDetail=d=>{
  const body=rows.map(r=>`<tr><td>${vnDate(r.date)} <span class="muted">(${DOW[dowOf(r.date)]})</span></td><td>${esc(r.c.code)}</td><td>${r.n<0?B(r.kind,'red'):r.n===0?B(r.kind,'gray'):r.kind==='Dạy thay'?B(r.kind,'amber'):B(r.kind,'green')}</td><td class="r"><b class="${r.n<0?'neg':r.n>0?'pos':'muted'}">${r.n>0?'+1':r.n<0?'−1':'0'}</b></td><td class="r ${r.n<0?'neg':''}">${sm(r.n*rate)}</td><td>${esc(r.note)}</td></tr>`).join('');
  const ft=(l,v,b)=>`<tr><td colspan="4">${l}</td><td class="r">${v}</td><td></td></tr>`;
  const tb=tbl(['Ngày','Lớp','Nội dung','>Số buổi','>Thành tiền','Ghi chú'],body,`<tr><td colspan="3">Tổng số buổi tính lương</td><td class="r">${N}</td><td class="r">${money(money_)}</td><td></td></tr>`+(p.fixed?ft('Lương cố định',money(p.fixed)):'')+(p.allowance?ft('Phụ cấp',money(p.allowance)):'')+(p.bonus?ft('Thưởng',money(p.bonus)):'')+ft('TỔNG LƯƠNG',money(p.total)));
- modal(`Chi tiết lương – ${esc(st.name)} · ${ymShort(ym)}`,`<div class="fld full"><div class="note info" style="margin:0">${esc(st.role)} · ${PAYT[st.payType]} · Đơn giá <b>${money(rate)}/buổi</b>. Mỗi buổi dạy +1; buổi nhờ người thay −1 (không tính tiền); buổi dạy thay cho người khác +1.</div>${tb}</div>`,()=>true,{wide:true,ok:'Đóng'})};
-ACT.payExtra=d=>{const s=DB.staff.find(x=>x.id===d.id),p=payrollOf(s,cur());modal(`Phụ cấp / thưởng – ${esc(s.name)}`,fld('allowance','Phụ cấp (đ)',p.allowance,{type:'number'})+fld('bonus','Thưởng (đ)',p.bonus,{type:'number'}),v=>{const k=s.id+'|'+cur();DB.payroll[k]=Object.assign(DB.payroll[k]||{},{allowance:+v.allowance||0,bonus:+v.bonus||0});if(p.paid)syncPayroll(s.id,cur());commit('Đã cập nhật'+(p.paid?' và đồng bộ phiếu chi':''))})};
-ACT.payDo=d=>{const s=DB.staff.find(x=>x.id===d.id),ym=cur(),p=payrollOf(s,ym),t=todayStr();modal(`Chi lương – ${esc(s.name)}`,`<div class="note ok full">Tổng lương ${ymShort(ym)}: <b>${money(p.total)}</b>. Hệ thống sẽ tạo phiếu chi tương ứng.</div>`+fld('date','Ngày chi',t.startsWith(ym)?t:dateOf(ym,dim(ym)),{type:'date',req:1,cls:'full'}),v=>{if(!v.date.startsWith(ym)){toast('Ngày chi phải nằm trong tháng đang chọn để chi phí vào đúng kỳ','err');return false}if(!payPayroll(s.id,ym,v.date)){toast('Không thể chi lương (đã chi hoặc tổng bằng 0)','err');return false}commit('Đã chi lương – phiếu chi đã được tạo')})};
-ACT.payUndo=d=>{const s=DB.staff.find(x=>x.id===d.id);if(!ask(`Hoàn tác thanh toán lương của ${s.name}? Phiếu chi liên quan sẽ bị xóa.`))return;unpayPayroll(s.id,cur());commit('Đã hoàn tác')};
+ modal(`Chi tiết lương – ${esc(st.name)} · ${ymShort(ym)}`,`<div class="fld full"><div class="note info" style="margin:0">${esc(st.role)} · ${PAYT[st.payType]} · Đơn giá <b>${money(rate)}/buổi</b>. Mỗi buổi dạy +1; buổi nhờ người thay −1 (không tính tiền); buổi dạy thay cho người khác +1.</div>${tb}</div>`,()=>true,{wide:true,ok:'Đóng',actions:payrollButton(p)||' '})};
+ACT.payExtra=d=>{const s=DB.staff.find(x=>x.id===d.id),p=payrollOf(s,cur());modal(`Phụ cấp / thưởng – ${esc(s.name)}`,fld('allowance','Phụ cấp (đ)',p.allowance,{type:'money'})+fld('bonus','Thưởng (đ)',p.bonus,{type:'money'}),v=>{const k=s.id+'|'+cur();DB.payroll[k]=Object.assign(DB.payroll[k]||{},{allowance:+v.allowance||0,bonus:+v.bonus||0});if(p.paid)syncPayroll(s.id,cur());commit('Đã cập nhật'+(p.paid?' và đồng bộ phiếu chi':''))})};
+let savingPayrollPayment=false;
+async function savePayrollPayment(stId,ym,expense,expectedId,form){
+ if(savingPayrollPayment)return;
+ savingPayrollPayment=true;
+ const modalForm=form||$('#mform');
+ const buttons=modalForm?[...modalForm.querySelectorAll('button')]:[];
+ buttons.forEach(button=>{button.disabled=true});
+ try{
+  await flushNow();
+  if($('#syncSt').classList.contains('err'))return;
+  const {data,error}=await sb.rpc('save_football_payroll_payment',{
+   p_staff_id:stId,p_month:ym,p_expense:expense,p_expected_id:expectedId
+  });
+  if(error)throw error;
+  for(const row of data.rows){
+   applyRow(row,false);
+   SNAP.set(row.collection+'|'+row.id,sig(row));
+  }
+  if(data.deleted_id){
+   removeLocal('expenses',data.deleted_id);
+   SNAP.delete('expenses|'+data.deleted_id);
+   META.delete('expenses|'+data.deleted_id);
+  }
+  if(modalForm?.isConnected)closeModal();
+  render();
+  toast(expense?'Đã chi lương – phiếu chi đã được tạo':'Đã hoàn tác – phiếu chi đã được xóa');
+ }catch(error){toast(error.message||'Không lưu được thanh toán lương','err')}
+ finally{savingPayrollPayment=false;buttons.forEach(button=>{button.disabled=false})}
+}
+ACT.payDo=d=>{
+ const s=DB.staff.find(x=>x.id===d.id),ym=cur();
+ if(!s)return;
+ const p=payrollOf(s,ym),t=todayStr();
+ if(p.paid||p.total<=0)return;
+ modal(`Chi lương – ${esc(s.name)}`,`<div class="note ok full">Tổng lương ${ymShort(ym)}: <b>${money(p.total)}</b>. Hệ thống sẽ tạo phiếu chi tương ứng.</div>`
+ +fld('date','Ngày chi',t.startsWith(ym)?t:dateOf(ym,dim(ym)),{type:'date',req:1,cls:'full'}),(v,form)=>{
+  if(!v.date.startsWith(ym)){toast('Ngày chi phải nằm trong tháng đang chọn','err');return false}
+  savePayrollPayment(s.id,ym,payrollExpense(p,ym,v.date),null,form);
+  return false;
+ },{ok:'Chi lương'});
+};
+ACT.payUndo=d=>{
+ const s=DB.staff.find(x=>x.id===d.id),ym=cur();
+ if(!s)return;
+ const p=payrollOf(s,ym);
+ if(!p.paid||!ask(`Hoàn tác chi lương của ${s.name}? Phiếu chi liên quan sẽ bị xóa.`))return;
+ savePayrollPayment(s.id,ym,null,p.ex.id);
+};
 ACT.paySync=d=>{syncPayroll(d.id,cur());commit('Đã cập nhật phiếu chi theo tổng lương mới')};
 /* reports */
 CHG.repYear=v=>{S.y=+v;if(!TREE[S.y].includes(S.m))S.m=TREE[S.y][0];S.open.add(S.y);render()};
