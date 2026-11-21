@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ĐĂNG KHOA SPORT – Football Academy Management System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.79.0/dist/umd/supabase.js"></script>
+<script>
+/* =====================================================================
+   >>> CẤU HÌNH SUPABASE – ĐIỀN 2 GIÁ TRỊ DƯỚI ĐÂY (Project Settings → API) <<<
+   SUPABASE_URL              : dạng https://xxxxxxxxxxxx.supabase.co
+   SUPABASE_PUBLISHABLE_KEY  : khóa "Publishable key" (sb_publishable_...) – được phép để công khai.
+   TUYỆT ĐỐI KHÔNG dán secret key / service_role key vào file này.
+   ===================================================================== */
+const SUPABASE_URL = 'https://qhwaojhkiwdoozwybwuh.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_4jMxBzw6gpqBSqSJKHiTtQ_gruGOKPr';
+</script>
+<style>
+:root{--g:#087C45;--gd:#075B35;--navy:#142D4E;--navy2:#0E2340;--mint:#EAF6EF;--amber:#F59E0B;--red:#E5484D;--bg:#F4F7F5;--ink:#122A1F;--mut:#62756B;--line:#DCE6E0;--navw:212px;--treew:252px;--r:12px}
+body.tc{--treew:54px}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{font-family:'Be Vietnam Pro','Inter',system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.45}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit;font-size:14px}
+#app{display:grid;grid-template-rows:62px 1fr;height:100vh}
+.top{background:linear-gradient(90deg,var(--navy2),var(--navy) 55%,#0b5a3c);color:#fff;display:flex;align-items:center;gap:14px;padding:0 18px;box-shadow:0 2px 10px rgba(0,0,0,.18);z-index:5}
+.brand{display:flex;align-items:center;gap:11px}
+.logo{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,#0fa35c,var(--g));display:grid;place-items:center;box-shadow:0 3px 10px rgba(0,0,0,.25);border:2px solid rgba(255,255,255,.25)}
+.brand b{display:block;font-weight:800;letter-spacing:.5px;font-size:16px}
+.brand small{display:block;font-size:11px;opacity:.75;margin-top:-1px}
+.period{margin-left:12px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);padding:6px 14px;border-radius:999px;font-weight:600;display:flex;gap:8px;align-items:center;white-space:nowrap}
+.period i{color:#FBBF24;display:flex}
+.tools{margin-left:auto;display:flex;gap:8px;align-items:center}
+.tb{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:10px;padding:8px 12px;display:flex;align-items:center;gap:7px;font-weight:600;font-size:13px;position:relative}
+.tb:hover{background:rgba(255,255,255,.22)}
+.tb.amb{background:var(--amber);border-color:var(--amber);color:#2b1c00}
+.badge-n{position:absolute;top:-6px;right:-6px;background:var(--red);color:#fff;border-radius:999px;font-size:11px;min-width:19px;height:19px;display:grid;place-items:center;padding:0 5px;border:2px solid var(--navy)}
+.m-only{display:none}
+.shell{display:grid;grid-template-columns:var(--navw) var(--treew) minmax(0,1fr);min-height:0;transition:grid-template-columns .2s}
+nav#nav{background:var(--navy);color:#cdd9e8;overflow-y:auto;padding:14px 10px;display:flex;flex-direction:column;gap:3px}
+nav#nav button{display:flex;align-items:center;gap:11px;background:none;border:0;color:inherit;padding:11px 12px;border-radius:10px;font-weight:600;font-size:13.5px;text-align:left}
+nav#nav button:hover{background:rgba(255,255,255,.08);color:#fff}
+nav#nav button.on{background:linear-gradient(90deg,var(--g),#0a9556);color:#fff;box-shadow:0 4px 12px rgba(8,124,69,.4)}
+nav#nav .sp{flex:1}
+nav#nav .nf{font-size:11px;opacity:.6;padding:8px 10px;line-height:1.4}
+.tree{background:#fff;border-right:1px solid var(--line);overflow-y:auto;overflow-x:hidden;padding:12px 10px;position:relative}
+.th{display:flex;align-items:center;justify-content:space-between;padding:4px 4px 10px;border-bottom:2px solid var(--mint);margin-bottom:8px}
+.tt{display:flex;gap:8px;align-items:center;color:var(--gd)}
+.tt b{font-size:13px;letter-spacing:.4px;text-transform:uppercase}
+.tt svg{color:var(--amber)}
+.vl{display:none;writing-mode:vertical-rl;transform:rotate(180deg);font-weight:800;color:var(--gd);margin:14px auto 0;letter-spacing:1px;background:var(--mint);padding:10px 6px;border-radius:8px}
+body.tc .vl{display:block}
+body.tc .yr,body.tc .tt b,body.tc .tt svg,body.tc .tfoot{display:none}
+body.tc .th{flex-direction:column;gap:8px;border:0}
+body.tc .th .ib svg{transform:rotate(180deg)}
+.yr{margin-bottom:4px}
+.yh{width:100%;display:flex;align-items:center;gap:8px;background:none;border:0;padding:9px 8px;border-radius:10px;color:var(--gd);text-align:left}
+.yh b{font-weight:800;font-size:14px;flex:1}
+.yh em{font-style:normal;font-size:11px;color:var(--mut);background:var(--mint);padding:2px 8px;border-radius:999px}
+.yh svg{flex:none}
+.yh .fo{color:var(--amber)}
+.yh .arr{display:flex;transition:transform .18s;color:var(--g)}
+.yr.open .arr{transform:rotate(90deg)}
+.yr.open>.yh{background:linear-gradient(90deg,var(--mint),#fff)}
+.yh:hover{background:var(--mint)}
+.ml{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:6px 6px 8px 26px;border-left:2px dashed #BFDCCB;margin-left:17px}
+.mo{position:relative;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px 6px;font-weight:600;font-size:12.5px;color:#2a4a3a;transition:.15s}
+.mo:hover{background:var(--mint);border-color:var(--g);transform:translateY(-1px)}
+.mo.sel{background:var(--gd);color:#fff;border-color:var(--gd);box-shadow:0 4px 10px rgba(7,91,53,.35)}
+.mo .dot{position:absolute;top:5px;right:6px;width:6px;height:6px;border-radius:50%;background:var(--amber)}
+.tfoot{font-size:11px;color:var(--mut);padding:10px 6px;line-height:1.4}
+main#main{overflow-y:auto;padding:20px 24px 40px;min-width:0}
+.phead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.phead h1{margin:0;font-size:22px;color:var(--navy);font-weight:800}
+.phead p{margin:2px 0 0;color:var(--mut)}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:0;border-radius:10px;padding:9px 15px;font-weight:700;font-size:13px;display:inline-flex;align-items:center;gap:7px;transition:.15s;white-space:nowrap}
+.btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.btn.primary{background:var(--g);color:#fff}
+.btn.navy{background:var(--navy);color:#fff}
+.btn.amber{background:var(--amber);color:#2b1c00}
+.btn.red{background:var(--red);color:#fff}
+.btn.ghost{background:#fff;color:var(--navy);border:1px solid var(--line)}
+.btn.sm{padding:6px 10px;font-size:12px}
+.ib{background:none;border:0;border-radius:8px;padding:6px;color:var(--mut);display:inline-grid;place-items:center}
+.ib:hover{background:var(--mint);color:var(--gd)}
+.ib.sm{padding:5px}
+.ib.del:hover{background:#fde8e9;color:var(--red)}
+.ib.pay{color:var(--g)}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:0 2px 8px rgba(20,45,78,.04)}
+.card h3{margin:0 0 12px;font-size:14.5px;color:var(--navy);display:flex;align-items:center;gap:8px}
+.card h3 svg{color:var(--g)}
+.kgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:14px}
+.kpi{border-radius:var(--r);padding:18px;color:#fff;display:flex;gap:14px;align-items:flex-start;box-shadow:0 8px 20px rgba(20,45,78,.14);transition:.2s;position:relative;overflow:hidden}
+.kpi:hover{transform:translateY(-3px)}
+.kpi:after{content:"";position:absolute;right:-30px;top:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.1)}
+.kpi .ki{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.2);display:grid;place-items:center;flex:none}
+.kpi small{display:block;font-weight:700;letter-spacing:.6px;font-size:11.5px;opacity:.9}
+.kpi strong{display:block;font-size:24px;font-weight:800;margin:2px 0}
+.kpi .dl{font-size:12px;opacity:.92}
+.k1{background:linear-gradient(135deg,#0aa35c,var(--g))}
+.k2{background:linear-gradient(135deg,#F59E0B,#E5484D)}
+.k3{background:linear-gradient(135deg,var(--g),var(--gd))}
+.k4{background:linear-gradient(135deg,#1d4373,var(--navy2))}
+.kpi2{background:#fff;border:1px solid var(--line);border-left:5px solid var(--g);border-radius:var(--r);padding:14px 16px;display:flex;gap:12px;align-items:center;transition:.2s}
+.kpi2:hover{box-shadow:0 6px 16px rgba(20,45,78,.1);transform:translateY(-2px)}
+.kpi2 .ki{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;background:var(--mint);color:var(--g)}
+.kpi2 small{color:var(--mut);font-weight:600;font-size:12px;display:block}
+.kpi2 strong{font-size:20px;color:var(--navy)}
+.kpi2.b{border-left-color:var(--navy)}.kpi2.b .ki{background:#E4ECF7;color:var(--navy)}
+.kpi2.a{border-left-color:var(--amber)}.kpi2.a .ki{background:#FEF3DC;color:#b87504}
+.kpi2.r{border-left-color:var(--red)}.kpi2.r .ki{background:#FDE8E9;color:var(--red)}
+.g3{display:grid;grid-template-columns:1.6fr 1fr 1.2fr;gap:14px;margin-bottom:14px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.cv{position:relative;height:270px}
+.tw{overflow-x:auto}
+table.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{background:var(--gd);color:#fff;text-align:left;padding:10px 11px;font-weight:700;font-size:12px;white-space:nowrap}
+.tbl th:first-child{border-radius:9px 0 0 0}.tbl th:last-child{border-radius:0 9px 0 0}
+.tbl td{padding:9px 11px;border-bottom:1px solid #EAF0EC;vertical-align:middle}
+.tbl tbody tr:hover{background:#F6FBF8}
+.tbl tr.clk{cursor:pointer}.tbl tr.clk:hover{background:#E3F3EA}
+.tbl .r{text-align:right;white-space:nowrap}
+.tbl td.act{white-space:nowrap;text-align:right}
+.tbl tfoot td{background:var(--mint);font-weight:800;color:var(--gd);border-top:2px solid var(--g)}
+.tbl.mini th{background:var(--navy)}
+.empty{text-align:center;color:var(--mut);padding:22px 10px!important}
+.bd{display:inline-block;padding:3px 10px;border-radius:999px;font-size:11.5px;font-weight:700;white-space:nowrap}
+.bd.green{background:#DDF3E6;color:var(--gd)}.bd.amber{background:#FEF0D3;color:#9a6200}.bd.red{background:#FDE3E4;color:#b4262b}.bd.gray{background:#ECEFED;color:#4b5a52}.bd.blue{background:#E1EBF8;color:var(--navy)}
+.neg{color:var(--red)}.pos{color:var(--g)}
+.tabs{display:flex;gap:6px;margin-bottom:14px;border-bottom:2px solid var(--line);flex-wrap:wrap}
+.tabs button{background:none;border:0;padding:10px 16px;font-weight:700;color:var(--mut);border-bottom:3px solid transparent;margin-bottom:-2px;font-size:13.5px}
+.tabs button.on{color:var(--gd);border-bottom-color:var(--g)}
+.tabs button:hover{color:var(--g)}
+.fbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+.fbar input,.fbar select,.fld input,.fld select,.fld textarea{border:1px solid #cfdcd4;border-radius:9px;padding:8px 11px;background:#fff;min-width:0}
+.fbar input:focus,.fld input:focus,.fld select:focus,.fld textarea:focus{outline:2px solid #9ad7b6;border-color:var(--g)}
+.fbar input[type=search]{min-width:220px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.st{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:12px 14px}
+.st small{color:var(--mut);font-weight:600;display:block;font-size:12px}
+.st b{font-size:18px;color:var(--navy)}
+.st.g b{color:var(--g)}.st.r b{color:var(--red)}.st.a b{color:#b87504}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.cal .h{background:var(--navy);color:#fff;text-align:center;padding:7px;border-radius:8px;font-weight:700;font-size:12px}
+.cal .d{min-height:92px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:5px;display:flex;flex-direction:column;gap:3px}
+.cal .d.o{background:transparent;border:0}
+.cal .d.t{border:2px solid var(--amber);background:#FFFBEF}
+.cal .d>span{font-weight:700;font-size:12px;color:var(--mut)}
+.chip{border:0;border-radius:7px;padding:4px 6px;font-size:11px;font-weight:700;color:#fff;text-align:left;line-height:1.25}
+.chip:hover{filter:brightness(1.12)}
+.chip small{display:block;font-weight:500;opacity:.9}
+.attrow{display:grid;grid-template-columns:1.4fr repeat(4,auto);gap:8px;align-items:center;padding:9px 10px;border-bottom:1px solid #EAF0EC}
+.attrow:hover{background:#F6FBF8}
+.rad{display:flex;gap:4px;align-items:center}
+.rad label{display:flex;align-items:center;gap:4px;padding:5px 9px;border-radius:8px;border:1px solid var(--line);font-size:12px;font-weight:600;cursor:pointer;background:#fff}
+.rad input{accent-color:var(--g)}
+.rad label:has(input:checked){background:var(--mint);border-color:var(--g);color:var(--gd)}
+.sesbar{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 12px}
+.sesbar button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 10px;font-weight:600;font-size:12px}
+.sesbar button.on{background:var(--gd);color:#fff;border-color:var(--gd)}
+.sesbar button.ok:not(.on){border-color:var(--g);color:var(--gd);background:var(--mint)}
+#modal{position:fixed;inset:0;background:rgba(10,25,40,.55);display:none;align-items:flex-start;justify-content:center;padding:4vh 12px;overflow-y:auto;z-index:50}
+#modal.show{display:flex}
+.mbox{background:#fff;border-radius:16px;width:100%;max-width:560px;box-shadow:0 20px 60px rgba(0,0,0,.35);overflow:hidden}
+.mbox.wide{max-width:760px}
+.mh{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;background:linear-gradient(90deg,var(--gd),var(--g));color:#fff}
+.mh .ib{color:#fff}.mh .ib:hover{background:rgba(255,255,255,.2)}
+.mb{padding:16px 18px;display:grid;grid-template-columns:1fr 1fr;gap:12px;max-height:68vh;overflow-y:auto}
+.mf{padding:12px 18px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px;background:#fafcfb}
+.fld{display:flex;flex-direction:column;gap:4px}
+.fld.full{grid-column:1/-1}
+.fld>span{font-weight:700;font-size:12px;color:var(--navy)}
+.fld .help{font-weight:400;color:var(--mut);font-size:12px}
+.fld>span i{color:var(--red);font-style:normal}
+.chk{display:inline-flex;align-items:center;gap:5px;margin-right:10px;font-weight:600}
+.chk input{accent-color:var(--g);width:16px;height:16px}
+.note{background:#FFF7E6;border:1px solid #F7D89B;color:#7a5200;border-radius:10px;padding:10px 12px;font-size:12.5px;margin-bottom:12px}
+.note.info{background:#E8F1FB;border-color:#BCD3EE;color:#1d3f6b}
+.note.ok{background:var(--mint);border-color:#BFE0CC;color:var(--gd)}
+#toasts{position:fixed;bottom:18px;right:18px;display:flex;flex-direction:column;gap:8px;z-index:90}
+.toast{background:var(--gd);color:#fff;padding:11px 16px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.25);font-weight:600;max-width:380px;animation:ti .2s}
+.toast.err{background:var(--red)}
+@keyframes ti{from{transform:translateY(10px);opacity:0}to{transform:none;opacity:1}}
+#notif{position:fixed;top:66px;right:16px;width:360px;max-width:calc(100vw - 24px);background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 16px 44px rgba(0,0,0,.25);display:none;z-index:60;overflow:hidden}
+#notif.show{display:block}
+#notif h4{margin:0;padding:12px 16px;background:var(--navy);color:#fff}
+.al{display:flex;gap:10px;padding:11px 16px;border-bottom:1px solid #eef3f0;cursor:pointer;align-items:flex-start}
+.al:hover{background:var(--mint)}
+.al i{width:9px;height:9px;border-radius:50%;margin-top:6px;flex:none}
+.al i.red{background:var(--red)}.al i.amber{background:var(--amber)}.al i.blue{background:#3B82A6}
+#ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:19}
+.print-head{display:none}
+.split{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.list-sm div{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px dashed #dfe8e3;gap:10px}
+.list-sm div:last-child{border:0}
+.muted{color:var(--mut)}
+@media(max-width:1250px){:root{--navw:64px}nav#nav button span{display:none}nav#nav .nf{display:none}nav#nav button{justify-content:center}.brand small{display:none}.kgrid{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:1fr 1fr}.g3>:first-child{grid-column:1/-1}}
+@media(max-width:900px){
+ .shell{grid-template-columns:minmax(0,1fr);grid-template-rows:auto 1fr}
+ nav#nav{flex-direction:row;overflow-x:auto;padding:6px 8px;gap:2px}
+ nav#nav .sp{display:none}
+ nav#nav button{padding:9px 12px;flex:none}
+ nav#nav button span{display:inline;font-size:12px}
+ .tree{position:fixed;left:-320px;top:62px;bottom:0;width:290px;z-index:20;transition:left .2s;box-shadow:6px 0 24px rgba(0,0,0,.25)}
+ body.tdo .tree{left:0}
+ body.tdo #ov{display:block}
+ body.tc{--treew:252px}
+ body.tc .yr,body.tc .tt b,body.tc .tt svg,body.tc .tfoot{display:block}
+ body.tc .vl{display:none}
+ .m-only{display:inline-flex}
+ .d-only{display:none}
+ .brand small,.tb span.tx{display:none}
+ .period{margin-left:0;padding:6px 10px;font-size:12px}
+ main#main{padding:14px 12px 40px}
+ .kgrid,.stats,.g2,.g3{grid-template-columns:1fr 1fr}
+ .mb{grid-template-columns:1fr}
+ .attrow{grid-template-columns:1fr}
+ .cal .d{min-height:64px}.chip small{display:none}
+}
+@media(max-width:560px){.kgrid,.stats,.g2,.g3{grid-template-columns:1fr}.top{padding:0 10px;gap:8px}.brand b{font-size:13px}}
+@media print{
+ .top,nav#nav,.tree,.acts,.tabs,.ib,.btn,.fbar,#toasts,#notif{display:none!important}
+ #app{display:block;height:auto}.shell{display:block}main#main{padding:0;overflow:visible}
+ body{background:#fff}.print-head{display:block;margin-bottom:10px}.card{box-shadow:none}
+ .tbl th{background:#075B35!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+/* ===== Đăng nhập / phân quyền / dấu vết (thêm mới) ===== */
+body:not(.authed) #app,body:not(.authed) #ov{display:none!important}
+body.authed #auth{display:none}
+#auth{min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(135deg,var(--navy2),var(--navy) 55%,#0b5a3c)}
+.authbox{background:#fff;border-radius:18px;padding:30px 28px 26px;width:100%;max-width:400px;box-shadow:0 24px 70px rgba(0,0,0,.4)}
+.authbox .lg{width:58px;height:58px;border-radius:16px;background:linear-gradient(135deg,#0fa35c,var(--g));display:grid;place-items:center;color:#fff;margin:0 auto 14px;border:2px solid rgba(255,255,255,.25);box-shadow:0 4px 14px rgba(8,124,69,.35)}
+.authbox h1{margin:0;text-align:center;font-size:19px;font-weight:800;color:var(--navy);letter-spacing:.5px}
+.authbox p.sub{margin:6px 0 20px;text-align:center;color:var(--mut);font-size:12.5px;line-height:1.5}
+.authbox .fld{margin-bottom:12px}
+.authbox .fld input{padding:10px 12px;width:100%}
+.authbox .btn{width:100%;justify-content:center;padding:11px 15px;margin-top:4px;font-size:14px}
+.authbox .btn:disabled{opacity:.6;cursor:default;transform:none;filter:none}
+#authMsg{border-radius:10px;padding:9px 12px;font-size:12.5px;margin:2px 0 8px;line-height:1.45}
+#authMsg.err{background:#FDE3E4;color:#b4262b;border:1px solid #f4b9bb}
+#authMsg.info{background:#E8F1FB;color:#1d3f6b;border:1px solid #BCD3EE}
+.tb.sync{cursor:default;font-size:12px;padding:8px 10px}
+.tb.sync.saving{background:var(--amber);border-color:var(--amber);color:#2b1c00}
+.tb.sync.err{background:var(--red);border-color:var(--red)}
+.tb.who{cursor:default;max-width:240px}.tb.who:hover{background:rgba(255,255,255,.12)}
+.tb.who .tx{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tbl td.aud{font-size:11px;color:var(--mut);line-height:1.35;white-space:nowrap}
+.tbl td.aud b{color:var(--ink);font-weight:600}
+.tbl tr.voidrow td{background:#FBF3F3;color:#7b6a6a}.tbl tr.voidrow:hover td{background:#FBF3F3}
+.tbl tr.voidrow .vc{text-decoration:line-through}
+@media print{#auth,.sync,.who{display:none!important}}
+
+</style>
+</head>
+<body>
+<div id="auth">
+ <div class="authbox">
+  <div class="lg" id="authLogo"></div>
+  <h1>ĐĂNG KHOA SPORT</h1>
+  <p class="sub">Football Academy Management System<br>Đăng nhập bằng tài khoản do quản trị viên cấp</p>
+  <form id="loginForm" autocomplete="on">
+   <label class="fld"><span>Email</span><input id="loginEmail" type="email" name="email" autocomplete="username" required placeholder="email@example.com"></label>
+   <label class="fld"><span>Mật khẩu</span><input id="loginPw" type="password" name="password" autocomplete="current-password" required placeholder="Mật khẩu"></label>
+   <div id="authMsg" style="display:none"></div>
+   <button class="btn primary" id="loginBtn" type="submit">Đăng nhập</button>
+  </form>
+ </div>
+</div>
+<div id="app">
+ <header class="top">
+  <button class="tb m-only" data-act="drawer" title="Chọn tháng"><span id="ic-folder"></span></button>
+  <div class="brand"><div class="logo" id="logo"></div><div><b>ĐĂNG KHOA SPORT</b><small>Football Academy Management System</small></div></div>
+  <div class="period"><i id="ic-cal"></i><span id="period"></span></div>
+  <div class="tools">
+   <button class="tb" data-act="bell" title="Thông báo"><span id="ic-bell"></span><span class="badge-n" id="bellN" style="display:none">0</span></button>
+   <button class="tb amb" data-act="expAll" title="Xuất báo cáo Excel"><span id="ic-dl"></span><span class="tx">Xuất báo cáo</span></button>
+   <button class="tb" data-act="backup" title="Sao lưu dữ liệu (JSON)"><span id="ic-save"></span><span class="tx">Sao lưu</span></button>
+   <span class="tb sync ok" id="syncSt" title="Trạng thái đồng bộ với Supabase">Đã lưu</span>
+   <span class="tb who" id="who" title="Tài khoản đang đăng nhập"><span id="ic-user"></span><span class="tx" id="whoTxt"></span></span>
+   <button class="tb" data-act="pwd" title="Đổi mật khẩu"><span id="ic-key"></span></button>
+   <button class="tb" data-act="logout" title="Đăng xuất"><span id="ic-out"></span><span class="tx">Đăng xuất</span></button>
+  </div>
+ </header>
+ <div class="shell"><nav id="nav"></nav><aside class="tree" id="tree"></aside><main id="main"></main></div>
+</div>
+<div id="ov" data-act="closeDrawer"></div>
+<div id="modal"></div><div id="toasts"></div><div id="notif"></div>
+<input type="file" id="fileIn" accept=".json,application/json" hidden>
+<script>
+'use strict';
+/* =====================================================================
+   ĐĂNG KHOA SPORT – Football Academy Management System (single file)
+   Lưu trữ: Supabase (Auth + Database + RLS) – dữ liệu dùng chung cho các tài khoản được cấp quyền
+   ===================================================================== */
+const LS_KEY='dangkhoa_sport_v1';
+const YEARS=[2026,2027,2028,2029,2030,2031,2032];
+const TREE={};YEARS.forEach(y=>TREE[y]=y===2026?[12]:[1,2,3,4,5,6,7,8,9,10,11,12]);
+const DOW=['CN','T2','T3','T4','T5','T6','T7'];
+const ATT={P:'Có mặt',AP:'Vắng có phép',AU:'Vắng không phép',N:'Nghỉ học'};
+const GROUPS={san:'Chi phí thuê sân',hlv:'Chi phí HLV',tg:'Chi phí trợ giảng',dc:'Chi phí dụng cụ',vh:'Chi phí vận hành'};
+const BUCKETS={san:'Thuê sân',hlv:'HLV',tg:'Trợ giảng',dc:'Dụng cụ',mk:'Marketing',khac:'Chi phí khác'};
+const OTHER_CATS=['Đồng phục','Phí giải đấu','Phí giao hữu','Tài trợ','Thu khác'];
+const METHODS=['Tiền mặt','Chuyển khoản','Ví điện tử'];
+const CLR=['#087C45','#142D4E','#F59E0B','#3B82A6','#8B5CF6','#E5484D','#0FA3A3','#C2410C'];
+
+/* ---------- helpers ---------- */
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=(p='x')=>p+Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-4);
+const sum=(a,f)=>a.reduce((s,x)=>s+(+f(x)||0),0);
+const by=f=>(a,b)=>f(a)<f(b)?-1:f(a)>f(b)?1:0;
+const pad=n=>String(n).padStart(2,'0');
+const ymOf=(y,m)=>y+'-'+pad(m);
+const ymLabel=ym=>`Tháng ${ym.slice(5)}/${ym.slice(0,4)}`;
+const ymShort=ym=>`T${+ym.slice(5)}/${ym.slice(0,4)}`;
+const prevYm=ym=>{let y=+ym.slice(0,4),m=+ym.slice(5)-1;if(m<1){m=12;y--}return ymOf(y,m)};
+const dim=ym=>new Date(+ym.slice(0,4),+ym.slice(5),0).getDate();
+const dateOf=(ym,d)=>ym+'-'+pad(d);
+const dowOf=ds=>new Date(+ds.slice(0,4),+ds.slice(5,7)-1,+ds.slice(8,10)).getDay();
+const vnDate=ds=>ds?`${ds.slice(8,10)}/${ds.slice(5,7)}/${ds.slice(0,4)}`:'';
+const todayStr=()=>{const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())};
+const num=n=>new Intl.NumberFormat('vi-VN').format(Math.round(n||0));
+const money=n=>num(n)+'đ';
+const fp=v=>(Math.round(v*10)/10).toLocaleString('vi-VN')+'%';
+const zeroB=()=>({san:0,hlv:0,tg:0,dc:0,mk:0,khac:0});
+const ICON={
+home:'<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>',
+cal:'<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-4 3-6 6.5-6s6.5 2 6.5 6"/><path d="M16 4.5a3.5 3.5 0 010 7M18 14c2.5.6 3.5 2.5 3.5 6"/>',
+check:'<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M8 12l3 3 5-6"/>',
+wallet:'<rect x="2.5" y="6" width="19" height="14" rx="3"/><path d="M2.5 10h19M16 15h2"/>',
+down:'<circle cx="12" cy="12" r="9"/><path d="M12 7v9M8 13l4 4 4-4"/>',
+staff:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.5 3.5-7 8-7s8 2.5 8 7"/>',
+chart:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+db:'<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/>',
+bell:'<path d="M6 16V11a6 6 0 0112 0v5l2 2H4zM10 21h4"/>',
+dl:'<path d="M12 4v11M7 11l5 5 5-5M4 20h16"/>',
+upload:'<path d="M12 16V5M7 9l5-5 5 5M4 20h16"/>',
+save:'<path d="M5 3h12l3 3v15H5z"/><path d="M8 3v6h8V3M8 21v-7h8v7"/>',
+folder:'<path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>',
+folderopen:'<path d="M3 8a2 2 0 012-2h4l2 2h8a2 2 0 012 2"/><path d="M3 18l2.5-8h16L19 18a1 1 0 01-1 .8H4a1 1 0 01-1-.8z"/>',
+chev:'<path d="M9 6l6 6-6 6"/>',chevl:'<path d="M15 6l-6 6 6 6"/>',
+plus:'<path d="M12 5v14M5 12h14"/>',
+edit:'<path d="M4 20h4L19 9a2.8 2.8 0 00-4-4L4 16z"/>',
+trash:'<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+ball:'<circle cx="12" cy="12" r="9"/><path d="M12 8l3.5 2.5-1.3 4h-4.4l-1.3-4z"/><path d="M12 8V3M15.5 10.5L20 9M14.2 14.5l2.8 4M9.8 14.5L7 18.5M8.5 10.5L4 9"/>',
+x:'<path d="M6 6l12 12M18 6L6 18"/>',
+search:'<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
+print:'<path d="M7 9V3h10v6M7 17H4v-7h16v7h-3M7 14h10v7H7z"/>',
+alert:'<path d="M12 3l10 18H2z"/><path d="M12 10v5M12 18v.5"/>',
+swap:'<path d="M4 8h14l-3-3M20 16H6l3 3"/>',
+refresh:'<path d="M20 11a8 8 0 10-2.3 5.7M20 4v7h-7"/>',
+coin:'<circle cx="12" cy="12" r="9"/><path d="M14.5 9.5c-.5-1-1.5-1.5-2.7-1.5-1.7 0-2.8.9-2.8 2.1 0 3 5.7 1.4 5.7 4.3 0 1.2-1.2 2.1-2.9 2.1-1.3 0-2.4-.6-3-1.6M12 6v2M12 16v2"/>',
+trend:'<path d="M3 17l6-6 4 4 8-9M15 6h6v6"/>',
+pct:'<path d="M19 5L5 19"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/>',
+user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.5 3.5-7 8-7s8 2.5 8 7"/>',
+doc:'<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h7"/>'
+};
+const ic=(n,s=18)=>`<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICON[n]||''}</svg>`;
+
+/* ---------- storage ---------- */
+let DB=null;
+const blank=()=>({v:1,settings:{allocMode:'students'},classes:[],students:[],staff:[],tuitions:[],receipts:[],expCats:[],expenses:[],recurring:[],attendance:{},payroll:{},changes:[],voided:[]});
+function norm(d){const b=blank(),o=Object.assign(b,d);o.settings=Object.assign(blank().settings,d.settings||{});['classes','students','staff','tuitions','receipts','expCats','expenses','recurring','changes','voided'].forEach(k=>{if(!Array.isArray(o[k]))o[k]=[]});if(!o.attendance||typeof o.attendance!=='object')o.attendance={};if(!o.payroll||typeof o.payroll!=='object')o.payroll={};return o}
+/* save()/load() được thay bằng lớp Supabase ở phần SUPABASE bên dưới */
+function snapshotPrev(){try{localStorage.setItem(LS_KEY+'_prev',JSON.stringify(DB))}catch(e){}}
+
+/* ---------- categories & codes ---------- */
+function defaultCats(){const g=(group,list)=>list.map((name,i)=>({id:group+(i+1),group,name}));
+return[...g('san',['Thuê sân theo buổi','Thuê sân theo giờ','Thuê sân theo tháng','Chi phí phát sinh tại sân']),
+...g('hlv',['HLV chính','HLV phụ','Thưởng HLV','Phụ cấp HLV']),
+...g('tg',['Lương trợ giảng','Phụ cấp trợ giảng','Thưởng trợ giảng']),
+...g('dc',['Bóng','Áo tập','Đồng phục','Nón','Tất','Dụng cụ tập luyện']),
+...g('vh',['Marketing','Quảng cáo','Nước uống','Giải đấu','Giao hữu','Sửa chữa','Chi phí khác'])]}
+const catOf=id=>DB.expCats.find(c=>c.id===id);
+function bucketOf(id){const c=catOf(id);if(!c)return'khac';if(c.group==='vh')return/marketing|quảng cáo/i.test(c.name)?'mk':'khac';return c.group}
+function nextCode(prefix,list,w=3){let mx=0;list.forEach(x=>{const c=String(x.code||'');if(c.startsWith(prefix)){const m=c.slice(prefix.length).match(/^(\d+)$/);if(m)mx=Math.max(mx,+m[1])}});return prefix+String(mx+1).padStart(w,'0')}
+const rcCode=d=>nextCode('PT-'+d.slice(0,7).replace('-','')+'-',[...DB.receipts,...DB.voided.filter(x=>x._k==='receipts')]);
+const exCode=d=>nextCode('PC-'+d.slice(0,7).replace('-','')+'-',[...DB.expenses,...DB.voided.filter(x=>x._k==='expenses')]);
+const staffName=id=>{const s=DB.staff.find(x=>x.id===id);return s?esc(s.name):'<span class="muted">—</span>'};
+const className=id=>{const c=DB.classes.find(x=>x.id===id);return c?esc(c.code+' · '+c.name):'<span class="muted">Chung</span>'};
+const classCode=id=>{const c=DB.classes.find(x=>x.id===id);return c?esc(c.code):'Chung'};
+
+/* ---------- domain logic ---------- */
+const activeIn=(s,ym)=>{if(s.joinDate.slice(0,7)>ym)return false;if(s.status==='Đang học')return true;return ym<(s.statusYm||'0000-00')};
+const classLive=(c,ym)=>{if(c.status==='Tạm dừng')return false;if(c.status==='Kết thúc'&&!c.to)return false;if(c.from&&c.from.slice(0,7)>ym)return false;if(c.to&&c.to.slice(0,7)<ym)return false;return true};
+function sessions(c,ym){
+ const out=[];if(!classLive(c,ym))return out;
+ for(let d=1;d<=dim(ym);d++){const ds=dateOf(ym,d);if(!(c.days||[]).includes(dowOf(ds)))continue;if(c.from&&ds<c.from)continue;if(c.to&&ds>c.to)continue;out.push({date:ds,classId:c.id,start:c.start,end:c.end,venue:c.venue,kind:'regular'})}
+ const ch=DB.changes.filter(x=>x.classId===c.id);
+ ch.forEach(x=>{if(x.type==='cancel'||x.type==='move'){const i=out.findIndex(s=>s.date===x.date&&s.kind==='regular');if(i>=0)out.splice(i,1)}});
+ ch.forEach(x=>{
+  if(x.type==='add'&&x.date.startsWith(ym))out.push({date:x.date,classId:c.id,start:x.start||c.start,end:x.end||c.end,venue:x.venue||c.venue,kind:'extra',chId:x.id,note:x.note});
+  if(x.type==='move'&&x.newDate&&x.newDate.startsWith(ym))out.push({date:x.newDate,classId:c.id,start:x.start||c.start,end:x.end||c.end,venue:x.venue||c.venue,kind:'moved',chId:x.id,note:x.note,from:x.date});
+ });
+ return out.sort((a,b)=>a.date.localeCompare(b.date)||a.start.localeCompare(b.start));
+}
+const attKey=(cid,ds)=>cid+'|'+ds;
+const effStaff=(rec,c)=>({coach:rec&&'coachId' in rec?rec.coachId:c.coachId,asst:rec&&'assistantId' in rec?rec.assistantId:c.assistantId});
+const actualCount=(cid,ym)=>Object.values(DB.attendance).filter(a=>a.classId===cid&&a.date.startsWith(ym)).length;
+function paidMap(){const m={};DB.receipts.forEach(r=>{if(r.tuitionId)m[r.tuitionId]=(m[r.tuitionId]||0)+(+r.amount||0)});return m}
+function tStatus(t,paid){const rem=Math.max(0,t.due-paid);if(rem<=0)return'Đã đóng';if(t.dueDate&&todayStr()>t.dueDate)return'Quá hạn';return paid>0?'Đóng một phần':'Chưa đóng'}
+function remaining(t,excludeRid){const P=paidMap();let p=P[t.id]||0;if(excludeRid){const r=DB.receipts.find(x=>x.id===excludeRid);if(r&&r.tuitionId===t.id)p-=+r.amount}return Math.max(0,t.due-p)}
+function tuitionRows(ym){const P=paidMap();return DB.tuitions.filter(t=>t.ym===ym).map(t=>{const s=DB.students.find(x=>x.id===t.studentId),c=DB.classes.find(x=>x.id===t.classId),paid=P[t.id]||0;const rc=DB.receipts.filter(r=>r.tuitionId===t.id).map(r=>r.date).sort();return{t,s,c,paid,rem:Math.max(0,t.due-paid),status:tStatus(t,paid),payDate:rc.length?rc[rc.length-1]:''}}).sort((a,b)=>(a.s?a.s.name:'').localeCompare(b.s?b.s.name:'','vi'))}
+function genTuition(ym){let n=0;DB.students.forEach(s=>{if(!activeIn(s,ym)||s.status!=='Đang học'&&!(ym<(s.statusYm||'0000-00')))return;if(DB.tuitions.some(t=>t.studentId===s.id&&t.ym===ym))return;const c=DB.classes.find(x=>x.id===s.classId);DB.tuitions.push({id:uid('t'),studentId:s.id,classId:s.classId,ym,due:+s.fee||(c?+c.fee:0),dueDate:dateOf(ym,10),note:''});n++});return n}
+function monthCalc(ym){
+ const rc=DB.receipts.filter(r=>r.date.startsWith(ym)),ex=DB.expenses.filter(e=>e.date.startsWith(ym));
+ const rev=sum(rc,r=>r.amount),exp=sum(ex,e=>e.amount),b=zeroB();ex.forEach(e=>{b[bucketOf(e.catId)]+=+e.amount||0});
+ return{rev,exp,profit:rev-exp,margin:rev>0?(rev-exp)/rev*100:0,b,rc,ex,revTuition:sum(rc.filter(r=>r.type==='tuition'),r=>r.amount),revOther:sum(rc.filter(r=>r.type!=='tuition'),r=>r.amount)}
+}
+function classReport(ym){
+ const mc=monthCalc(ym);
+ const rows=DB.classes.map(c=>({c,id:c.id,name:c.name,code:c.code,students:DB.students.filter(s=>s.classId===c.id&&activeIn(s,ym)).length,rev:0,dir:0,alloc:0,b:zeroB()}));
+ const byId={};rows.forEach(r=>byId[r.id]=r);
+ let unRev=0,G=0;const Gb=zeroB();
+ mc.rc.forEach(r=>{const x=byId[r.classId];if(x)x.rev+=+r.amount;else unRev+=+r.amount});
+ mc.ex.forEach(e=>{const x=byId[e.classId],k=bucketOf(e.catId);if(x){x.dir+=+e.amount;x.b[k]+=+e.amount}else{G+=+e.amount;Gb[k]+=+e.amount}});
+ const mode=DB.settings.allocMode;const basis=rows.map(r=>mode==='revenue'?r.rev:mode==='students'?r.students:0);const sb=sum(basis,x=>x);
+ let left=G,leftB={...Gb};
+ if(mode!=='none'&&sb>0&&G>0){rows.forEach((r,i)=>{const sh=basis[i]/sb;r.alloc=G*sh;Object.keys(Gb).forEach(k=>r.b[k]+=Gb[k]*sh)});left=0;leftB=zeroB()}
+ rows.forEach(r=>{r.exp=r.dir+r.alloc;r.profit=r.rev-r.exp;r.margin=r.rev>0?r.profit/r.rev*100:0});
+ const gen={id:'',name:'Chung / chưa gắn lớp',code:'—',students:0,rev:unRev,exp:left,dir:left,alloc:0,b:leftB,profit:unRev-left,margin:unRev>0?(unRev-left)/unRev*100:0,general:true};
+ return{rows,gen,mc}
+}
+/* chi phí định kỳ */
+const weeksIn=ym=>{let n=0;for(let d=1;d<=dim(ym);d++)if(dowOf(dateOf(ym,d))===1)n++;return n};
+function recPlan(r,ym){
+ const out=[];const list=r.classId?DB.classes.filter(c=>c.id===r.classId):(r.cycle==='session'?DB.classes:[null]);
+ list.forEach(c=>{let qty=1;
+  if(r.cycle==='session'){if(!c)return;qty=sessions(c,ym).length}else if(r.cycle==='week')qty=weeksIn(ym);
+  if(qty<=0)return;
+  out.push({key:`rec:${r.id}:${c?c.id:'all'}:${ym}`,rec:r,classId:c?c.id:'',qty,amount:(+r.amount||0)*qty,date:dateOf(ym,Math.min(Math.max(+r.payDay||1,1),dim(ym)))})});
+ return out
+}
+const unitOf=c=>c==='session'?'buổi':c==='week'?'tuần':'tháng';
+const pendingRec=ym=>DB.recurring.filter(r=>r.active!==false).flatMap(r=>recPlan(r,ym)).filter(p=>!DB.expenses.some(e=>e.sourceKey===p.key));
+function genRecurring(ym){let added=0,skipped=0;DB.recurring.filter(r=>r.active!==false).forEach(r=>recPlan(r,ym).forEach(p=>{
+ if(DB.expenses.some(e=>e.sourceKey===p.key)){skipped++;return}
+ DB.expenses.push({id:uid('e'),code:exCode(p.date),date:p.date,catId:r.catId,content:`${r.name} – ${p.classId?classCode(p.classId):'chung'} (${p.qty} ${unitOf(r.cycle)}) ${ymShort(ym)}`,amount:p.amount,classId:p.classId,payee:r.payee||'',payer:r.payer||'Quản lý',note:'Tự động tạo từ chi phí định kỳ',source:'recurring',sourceKey:p.key});added++}));return{added,skipped}}
+/* lương */
+function payCat(st){const pref=st.role==='Trợ giảng'?'tg1':st.role==='HLV phụ'?'hlv2':'hlv1';if(catOf(pref))return pref;const g=st.role==='Trợ giảng'?'tg':'hlv';const c=DB.expCats.find(x=>x.group===g);return c?c.id:(DB.expCats[0]||{}).id||''}
+function payrollOf(st,ym){
+ const dflt=DB.classes.filter(c=>c.coachId===st.id||c.assistantId===st.id);
+ const planned=sum(dflt,c=>sessions(c,ym).length),ids=new Set(dflt.map(c=>c.id));let actual=0;
+ Object.values(DB.attendance).forEach(a=>{if(!a.date.startsWith(ym))return;const k=DB.classes.find(x=>x.id===a.classId);if(!k)return;const e=effStaff(a,k);if(e.coach===st.id||e.asst===st.id){actual++;ids.add(k.id)}});
+ const cls=DB.classes.filter(c=>ids.has(c.id));
+ const rec=DB.payroll[st.id+'|'+ym]||{};
+ const fixed=(st.payType==='fixed'||st.payType==='mixed')?+st.fixedSalary||0:0;
+ const perS=(st.payType==='session'||st.payType==='mixed')?(+st.sessionRate||0)*actual:0;
+ const allowance=+rec.allowance||0,bonus=+rec.bonus||0;
+ const ex=rec.expenseId?DB.expenses.find(e=>e.id===rec.expenseId):null;
+ return{st,cls,planned,actual,fixed,perS,allowance,bonus,total:fixed+perS+allowance+bonus,paid:!!ex,ex,rec}
+}
+function payPayroll(stId,ym,date){const st=DB.staff.find(s=>s.id===stId),p=payrollOf(st,ym);if(p.paid||p.total<=0)return false;
+ const rec=DB.payroll[stId+'|'+ym]=DB.payroll[stId+'|'+ym]||{};
+ const e={id:uid('e'),code:exCode(date),date,catId:payCat(st),content:`Lương ${ymShort(ym)} – ${st.name} (${st.role})`,amount:p.total,classId:p.cls.length===1?p.cls[0].id:'',payee:st.name,payer:'Quản lý',note:'Tự động từ bảng lương',source:'payroll',sourceKey:`pay:${stId}:${ym}`};
+ DB.expenses.push(e);rec.expenseId=e.id;rec.paidDate=date;return true}
+function unpayPayroll(stId,ym){const rec=DB.payroll[stId+'|'+ym];if(!rec||!rec.expenseId)return;DB.expenses=DB.expenses.filter(e=>e.id!==rec.expenseId);rec.expenseId=null;rec.paidDate=''}
+function syncPayroll(stId,ym){const st=DB.staff.find(s=>s.id===stId),p=payrollOf(st,ym);if(!p.ex)return;p.ex.amount=p.total;p.ex.classId=p.cls.length===1?p.cls[0].id:'';p.ex.content=`Lương ${ymShort(ym)} – ${st.name} (${st.role})`}
+
+/* ---------- sample data ---------- */
+function seed(){
+ DB=blank();DB.expCats=defaultCats();
+ DB.staff=[
+  {id:'st1',code:'NS001',name:'Nguyễn Văn Hùng',phone:'0903 111 222',role:'HLV chính',payType:'session',fixedSalary:0,sessionRate:250000,active:true},
+  {id:'st2',code:'NS002',name:'Trần Quốc Bảo',phone:'0912 333 444',role:'HLV chính',payType:'mixed',fixedSalary:400000,sessionRate:150000,active:true},
+  {id:'st3',code:'NS003',name:'Lê Thị Mai',phone:'0987 555 666',role:'Trợ giảng',payType:'session',fixedSalary:0,sessionRate:150000,active:true}];
+ DB.classes=[
+  {id:'c1',code:'LH01',name:'U8 Nhí – Cơ bản',ageGroup:'6–8 tuổi',coachId:'st1',assistantId:'st3',venue:'Sân Phú Thọ – Sân số 2',days:[6],start:'16:00',end:'17:30',fee:1800000,from:'2026-12-01',to:'',status:'Đang hoạt động'},
+  {id:'c2',code:'LH02',name:'U10 Nâng cao',ageGroup:'9–10 tuổi',coachId:'st2',assistantId:'st3',venue:'Sân Tao Đàn – Sân số 1',days:[0],start:'08:00',end:'09:30',fee:2200000,from:'2026-12-01',to:'',status:'Đang hoạt động'}];
+ const stu=(i,name,dob,g,parent,phone,c,fee)=>({id:'s'+i,code:'HV'+pad(i).padStart(3,'0'),name,dob,gender:g,parent,phone,joinDate:'2026-12-01',classId:c,fee,perWeek:1,status:'Đang học',statusYm:''});
+ DB.students=[stu(1,'Nguyễn Minh Khôi','2018-03-12','Nam','Nguyễn Văn An','0901 234 567','c1',1800000),stu(2,'Trần Gia Bảo','2018-07-25','Nam','Trần Thị Hoa','0902 345 678','c1',1800000),stu(3,'Lê Thảo Nhi','2017-11-02','Nữ','Lê Văn Phúc','0903 456 789','c1',1800000),stu(4,'Phạm Quốc Việt','2016-05-18','Nam','Phạm Thị Lan','0904 567 890','c2',2200000),stu(5,'Võ Thanh Tùng','2016-09-09','Nam','Võ Minh Trí','0905 678 901','c2',2200000)];
+ DB.recurring=[
+  {id:'r1',name:'Thuê sân',catId:'san1',amount:300000,cycle:'session',classId:'',payDay:28,payee:'Chủ sân',payer:'Quản lý',active:true},
+  {id:'r2',name:'Nước uống học viên',catId:'vh3',amount:300000,cycle:'month',classId:'',payDay:5,payee:'Đại lý nước',payer:'Quản lý',active:true}];
+ const rc=(date,sid,type,amount,method,content,cat,tid)=>{const s=DB.students.find(x=>x.id===sid);DB.receipts.push({id:uid('r'),code:rcCode(date),date,type,studentId:sid||'',classId:s?s.classId:'',tuitionId:tid||'',otherCat:cat||'',content,amount,method,payer:s?s.parent:'Công ty TNHH ABC',note:''})};
+ const tid=(sid,ym)=>(DB.tuitions.find(t=>t.studentId===sid&&t.ym===ym)||{}).id;
+ genTuition('2026-12');
+ rc('2026-12-03','s1','tuition',1800000,'Chuyển khoản','Học phí T12/2026','',tid('s1','2026-12'));
+ rc('2026-12-05','s2','tuition',1800000,'Tiền mặt','Học phí T12/2026','',tid('s2','2026-12'));
+ rc('2026-12-04','s4','tuition',2200000,'Chuyển khoản','Học phí T12/2026','',tid('s4','2026-12'));
+ rc('2026-12-06','s5','tuition',1200000,'Tiền mặt','Học phí T12/2026 (đóng đợt 1)','',tid('s5','2026-12'));
+ rc('2026-12-08','s1','other',350000,'Tiền mặt','Đồng phục thi đấu','Đồng phục');
+ rc('2026-12-08','s2','other',350000,'Tiền mặt','Đồng phục thi đấu','Đồng phục');
+ rc('2026-12-15','','other',1000000,'Chuyển khoản','Tài trợ nước uống & dụng cụ','Tài trợ');
+ genTuition('2027-01');
+ rc('2027-01-04','s1','tuition',1800000,'Chuyển khoản','Học phí T1/2027','',tid('s1','2027-01'));
+ rc('2027-01-05','s2','tuition',1800000,'Tiền mặt','Học phí T1/2027','',tid('s2','2027-01'));
+ rc('2027-01-06','s4','tuition',2200000,'Chuyển khoản','Học phí T1/2027','',tid('s4','2027-01'));
+ const ex=(date,catId,content,amount,classId,payee)=>DB.expenses.push({id:uid('e'),code:exCode(date),date,catId,content,amount,classId,payee,payer:'Quản lý',note:'',source:'manual',sourceKey:''});
+ ex('2026-12-02','dc1','Mua 6 quả bóng size 4',900000,'','Cửa hàng Thể thao 24h');
+ ex('2026-12-10','vh2','Quảng cáo Facebook tuyển sinh',400000,'','Meta Ads');
+ // điểm danh
+ const sample=(cid,date,idx)=>{const rec={};DB.students.filter(s=>s.classId===cid).forEach((s,i)=>{const n=+s.id.slice(1);rec[s.id]=(n+idx)%7===3?'AP':(n*3+idx)%11===5?'AU':'P'});DB.attendance[attKey(cid,date)]={classId:cid,date,records:rec,savedAt:new Date().toISOString()}};
+ DB.classes.forEach(c=>sessions(c,'2026-12').forEach((s,i)=>sample(c.id,s.date,i)));
+ ['2027-01-02','2027-01-09'].forEach((d,i)=>sample('c1',d,i));['2027-01-03','2027-01-10'].forEach((d,i)=>sample('c2',d,i));
+ genRecurring('2026-12');genRecurring('2027-01');
+ DB.staff.forEach(s=>payPayroll(s.id,'2026-12','2026-12-31'));
+ return DB
+}
+
+/* ---------- UI state ---------- */
+const S={page:'dashboard',tab:{},y:2026,m:12,open:new Set([2026]),f:{},charts:[],att:{cid:'',date:''},rep:{cls:'',scope:'month'}};
+const cur=()=>ymOf(S.y,S.m);
+const fl=p=>S.f[p]||(S.f[p]={});
+const gt=(p,d)=>S.tab[p]||d;
+function toast(msg,type='ok'){const t=document.createElement('div');t.className='toast '+type;t.textContent=msg;$('#toasts').appendChild(t);setTimeout(()=>t.remove(),3600)}
+function commit(msg){save();render();closeModal();if(msg)toast(msg)}
+const B=(t,c='gray')=>`<span class="bd ${c}">${esc(t)}</span>`;
+const ST_CLR={'Đã đóng':'green','Chưa đóng':'gray','Đóng một phần':'amber','Quá hạn':'red','Đang học':'green','Bảo lưu':'amber','Nghỉ học':'gray','Đang hoạt động':'green','Tạm dừng':'amber','Kết thúc':'gray'};
+const stB=t=>B(t,ST_CLR[t]||'gray');
+const tbl=(heads,rows,foot='')=>`<div class="tw"><table class="tbl"><thead><tr>${heads.map(h=>`<th${h[0]==='>'?' style="text-align:right"':''}>${esc(h.replace(/^>/,''))}</th>`).join('')}</tr></thead><tbody>${rows||`<tr><td colspan="${heads.length}" class="empty">Chưa có dữ liệu trong kỳ đang chọn</td></tr>`}</tbody>${foot?`<tfoot>${foot}</tfoot>`:''}</table></div>`;
+const ab=(act,icon,title,attrs='',cls='')=>`<button class="ib sm ${cls}" title="${title}" data-act="${act}" ${attrs}>${ic(icon,16)}</button>`;
+const tabs=(page,items,def)=>{const a=gt(page,def);return`<div class="tabs">${items.map(([k,l])=>`<button class="${k===a?'on':''}" data-act="tab" data-k="${k}">${l}</button>`).join('')}</div>`};
+const pn=v=>`<span class="${v<0?'neg':'pos'}">${money(v)}</span>`;
+const phead=(t,sub,acts='')=>`<div class="print-head"><h2 style="margin:0;color:#075B35">ĐĂNG KHOA SPORT – ${esc(t)}</h2><div>${esc(sub)}</div></div><div class="phead"><div><h1>${esc(t)}</h1><p>${sub}</p></div><div class="acts">${acts}</div></div>`;
+
+/* ---------- modal & forms ---------- */
+function fld(name,label,val='',o={}){const t=o.type||'text',req=o.req?'required':'';let inp;
+ if(t==='select')inp=`<select name="${name}" ${req} ${o.attrs||''}>${(o.options||[]).map(([v,l])=>`<option value="${esc(v)}" ${String(v)===String(val)?'selected':''}>${esc(l)}</option>`).join('')}</select>`;
+ else if(t==='textarea')inp=`<textarea name="${name}" rows="2" ${o.attrs||''}>${esc(val)}</textarea>`;
+ else inp=`<input type="${t}" name="${name}" value="${esc(val)}" ${req} ${t==='number'?'min="0" step="1"':''} placeholder="${esc(o.ph||'')}" ${o.attrs||''}>`;
+ return`<label class="fld ${o.cls||''}"><span>${label}${o.req?' <i>*</i>':''}</span>${inp}${o.help?`<span class="help">${o.help}</span>`:''}</label>`}
+function modal(title,body,onOk,o={}){
+ const m=$('#modal');
+ m.innerHTML=`<div class="mbox${o.wide?' wide':''}"><div class="mh"><b>${title}</b><button class="ib" type="button" data-act="mclose">${ic('x')}</button></div><form id="mform" autocomplete="off"><div class="mb">${body}</div><div class="mf"><button type="button" class="btn ghost" data-act="mclose">Hủy</button><button type="submit" class="btn primary">${o.ok||'Lưu'}</button></div></form></div>`;
+ m.classList.add('show');const f=$('#mform');
+ f.onsubmit=e=>{e.preventDefault();const d={};for(const[k,v]of new FormData(f))d[k]=k in d?[].concat(d[k],v):v;if(onOk(d,f)!==false)closeModal()};
+ if(o.init)o.init(f);const first=f.querySelector('input:not([type=checkbox]):not([type=hidden]),select');if(first)first.focus()}
+function closeModal(){const m=$('#modal');m.classList.remove('show');m.innerHTML=''}
+const ask=msg=>window.confirm(msg);
+function catSelect(name,val){return`<select name="${name}" required>${Object.keys(GROUPS).map(g=>`<optgroup label="${GROUPS[g]}">${DB.expCats.filter(c=>c.group===g).map(c=>`<option value="${c.id}" ${c.id===val?'selected':''}>${esc(c.name)}</option>`).join('')}</optgroup>`).join('')}</select>`}
+const clsOpts=(first)=>[[ '',first||'— Chung (không gắn lớp) —'],...DB.classes.map(c=>[c.id,`${c.code} · ${c.name}`])];
+const defDate=()=>{const ym=cur(),t=todayStr();return t.startsWith(ym)?t:dateOf(ym,1)};
+
+/* ---------- export helpers ---------- */
+function download(name,blob){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},800)}
+function exportCSV(name,rows){const csv='\uFEFF'+rows.map(r=>r.map(v=>{v=String(v??'');return/[",\n;]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}).join(',')).join('\r\n');download(name+'.csv',new Blob([csv],{type:'text/csv;charset=utf-8'}))}
+function exportXLSX(name,sheets){
+ if(window.XLSX){const wb=XLSX.utils.book_new();sheets.forEach(s=>{const ws=XLSX.utils.aoa_to_sheet(s.rows);ws['!cols']=(s.rows[0]||[]).map((_,i)=>({wch:Math.min(40,Math.max(10,...s.rows.map(r=>String(r[i]??'').length+2)))}));XLSX.utils.book_append_sheet(wb,ws,s.name.slice(0,31))});XLSX.writeFile(wb,name+'.xlsx');return}
+ const html=`<html><head><meta charset="utf-8"></head><body>${sheets.map(s=>`<h3>${esc(s.name)}</h3><table border="1">${s.rows.map(r=>`<tr>${r.map(v=>`<td>${esc(v)}</td>`).join('')}</tr>`).join('')}</table>`).join('<br>')}</body></html>`;
+ download(name+'.xls',new Blob(['\uFEFF'+html],{type:'application/vnd.ms-excel'}));toast('Chưa tải được thư viện Excel (cần Internet) – đã xuất file .xls dạng bảng','err')}
+const recvRows=ym=>[['Mã phiếu','Ngày thu','Loại','Học viên','Lớp','Nội dung','Số tiền','Hình thức','Người nộp','Ghi chú','Người nhập','Ngày giờ nhập','Người sửa','Ngày giờ sửa'],...DB.receipts.filter(r=>r.date.startsWith(ym)).sort(by(r=>r.date)).map(r=>{const s=DB.students.find(x=>x.id===r.studentId),c=DB.classes.find(x=>x.id===r.classId);return[r.code,vnDate(r.date),r.type==='tuition'?'Học phí':r.otherCat||'Thu khác',s?s.name:'',c?c.code:'Chung',r.content,+r.amount,r.method,r.payer,r.note,...auditArr('receipts',r.id)]})];
+const expRows=ym=>[['Mã phiếu','Ngày chi','Danh mục','Nội dung','Số tiền','Lớp','Người nhận','Người thanh toán','Ghi chú','Người nhập','Ngày giờ nhập','Người sửa','Ngày giờ sửa'],...DB.expenses.filter(e=>e.date.startsWith(ym)).sort(by(e=>e.date)).map(e=>{const c=catOf(e.catId),k=DB.classes.find(x=>x.id===e.classId);return[e.code,vnDate(e.date),c?c.name:'(đã xóa)',e.content,+e.amount,k?k.code:'Chung',e.payee,e.payer,e.note,...auditArr('expenses',e.id)]})];
+function monthRows(y,cls){return TREE[y].map(m=>{const ym=ymOf(y,m);let rev,exp,b;if(cls){const r=classReport(ym).rows.find(x=>x.id===cls);if(!r)return null;rev=r.rev;exp=r.exp;b=r.b}else{const mc=monthCalc(ym);rev=mc.rev;exp=mc.exp;b=mc.b}return{ym,rev,san:b.san,hlv:b.hlv,tg:b.tg,khac:b.dc+b.mk+b.khac,exp,profit:rev-exp,margin:rev>0?(rev-exp)/rev*100:0}}).filter(Boolean)}
+const monthSheet=(y,cls)=>{const r=monthRows(y,cls);const tot=r.reduce((a,x)=>({rev:a.rev+x.rev,san:a.san+x.san,hlv:a.hlv+x.hlv,tg:a.tg+x.tg,khac:a.khac+x.khac,exp:a.exp+x.exp,profit:a.profit+x.profit}),{rev:0,san:0,hlv:0,tg:0,khac:0,exp:0,profit:0});
+ return[['Tháng','Doanh thu','Chi phí thuê sân','Chi phí HLV','Chi phí trợ giảng','Chi phí khác','Tổng chi phí','Lợi nhuận','Tỷ suất lợi nhuận (%)'],...r.map(x=>[ymLabel(x.ym),x.rev,Math.round(x.san),Math.round(x.hlv),Math.round(x.tg),Math.round(x.khac),Math.round(x.exp),Math.round(x.profit),Math.round(x.margin*10)/10]),['TỔNG NĂM '+y,tot.rev,Math.round(tot.san),Math.round(tot.hlv),Math.round(tot.tg),Math.round(tot.khac),Math.round(tot.exp),Math.round(tot.profit),tot.rev>0?Math.round(tot.profit/tot.rev*1000)/10:0]]};
+function classAgg(scope){const yms=scope==='year'?TREE[S.y].map(m=>ymOf(S.y,m)):[cur()];const base=classReport(cur());const acc={};
+ const add=(r,k)=>{const a=acc[k]||(acc[k]={id:r.id,name:r.name,code:r.code,students:0,rev:0,exp:0,general:!!r.general});a.rev+=r.rev;a.exp+=r.exp};
+ yms.forEach(ym=>{const cr=classReport(ym);cr.rows.forEach(r=>add(r,r.id));add(cr.gen,'_gen')});
+ base.rows.forEach(r=>acc[r.id].students=r.students);
+ return Object.values(acc).map(a=>({...a,profit:a.rev-a.exp,margin:a.rev>0?(a.rev-a.exp)/a.rev*100:0})).filter(a=>!a.general||a.rev||a.exp)}
+const classSheet=scope=>[['Lớp','Số học viên','Doanh thu','Chi phí','Lợi nhuận','Tỷ suất lợi nhuận (%)'],...classAgg(scope).map(a=>[a.general?a.name:a.code+' · '+a.name,a.students,Math.round(a.rev),Math.round(a.exp),Math.round(a.profit),Math.round(a.margin*10)/10])];
+function exportAll(){const ym=cur();exportXLSX(`DangKhoaSport_BaoCao_${ym}`,[{name:'Theo tháng '+S.y,rows:monthSheet(S.y,'')},{name:'Theo lớp '+ymShort(ym).replace('/','-'),rows:classSheet('month')},{name:'Phiếu thu',rows:recvRows(ym)},{name:'Phiếu chi',rows:expRows(ym)}])}
+function backupJSON(){const o={app:'dangkhoa-sport',version:1,exportedAt:new Date().toISOString(),data:DB};const d=new Date();download(`DangKhoaSport_backup_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}.json`,new Blob([JSON.stringify(o,null,1)],{type:'application/json'}));toast('Đã tải file sao lưu JSON')}
+
+/* =========================== PAGES =========================== */
+const PAGES={};
+/* ---- Dashboard ---- */
+PAGES.dashboard={t:'Tổng quan',i:'home',r(){
+ const ym=cur(),mc=monthCalc(ym),pm=prevYm(ym),pv=monthCalc(pm),hasPrev=!!(pv.rev||pv.exp);
+ const tr=tuitionRows(ym),debt=sum(tr,x=>x.rem),dueStu=new Set(tr.filter(x=>x.rem>0).map(x=>x.t.studentId)).size;
+ const stuN=DB.students.filter(s=>activeIn(s,ym)).length,clsN=DB.classes.filter(c=>classLive(c,ym)).length;
+ const dlt=(c,p)=>{if(!hasPrev)return`<span class="dl">Chưa có dữ liệu ${ymShort(pm)}</span>`;if(p===0)return`<span class="dl">${ymShort(pm)}: 0đ</span>`;const d=(c-p)/Math.abs(p)*100;if(Math.abs(d)<.05)return`<span class="dl">= ${ymShort(pm)}</span>`;return`<span class="dl">${d>0?'▲':'▼'} ${fp(Math.abs(d))} so với ${ymShort(pm)}</span>`};
+ const dm=mc.margin-pv.margin;
+ const t=todayStr(),isCur=t.startsWith(ym);
+ let ses=DB.classes.flatMap(c=>sessions(c,ym));ses=isCur?ses.filter(s=>s.date===t):ses.filter(s=>s.date<=dateOf(ym,7));
+ const sesRows=ses.map(s=>`<tr><td>${vnDate(s.date)} <span class="muted">(${DOW[dowOf(s.date)]})</span></td><td>${s.start}–${s.end}</td><td><b>${className(s.classId)}</b></td><td>${esc(s.venue)}</td><td>${DB.attendance[attKey(s.classId,s.date)]?B('Đã điểm danh','green'):B('Chưa','gray')}</td></tr>`).join('');
+ const debtRows=tr.filter(x=>x.rem>0).sort((a,b)=>b.rem-a.rem).slice(0,8).map(x=>`<tr><td>${esc(x.s?x.s.name:'')}</td><td>${classCode(x.t.classId)}</td><td class="r">${money(x.rem)}</td><td>${stB(x.status)}</td></tr>`).join('');
+ const rcRows=[...mc.rc].sort((a,b)=>b.date.localeCompare(a.date)||b.code.localeCompare(a.code)).slice(0,6).map(r=>`<tr><td>${vnDate(r.date)}</td><td>${esc(r.content)}</td><td class="r pos">+${money(r.amount)}</td></tr>`).join('');
+ const exRows=[...mc.ex].sort((a,b)=>b.date.localeCompare(a.date)||b.code.localeCompare(a.code)).slice(0,6).map(e=>`<tr><td>${vnDate(e.date)}</td><td>${esc(e.content)}</td><td class="r neg">-${money(e.amount)}</td></tr>`).join('');
+ const pr=DB.staff.filter(s=>s.active!==false).map(s=>payrollOf(s,ym)).filter(p=>p.total>0&&!p.paid);
+ const due=[...pr.map(p=>`<tr><td>Lương ${esc(p.st.name)}</td><td>${B('Bảng lương','amber')}</td><td class="r">${money(p.total)}</td></tr>`),...pendingRec(ym).map(p=>`<tr><td>${esc(p.rec.name)} – ${p.classId?classCode(p.classId):'chung'}</td><td>${B('Định kỳ','blue')}</td><td class="r">${money(p.amount)}</td></tr>`)].join('');
+ const bk=Object.keys(BUCKETS).map(k=>`<div><span>${BUCKETS[k]}</span><b>${money(mc.b[k])}</b></div>`).join('');
+ return phead('Tổng quan hoạt động',`Dữ liệu <b>${ymLabel(ym)}</b> – toàn bộ số liệu thay đổi theo thư mục thời gian bên trái`,`<button class="btn amber" data-act="expAll">${ic('dl',16)}Xuất Excel</button><button class="btn ghost" data-act="print">${ic('print',16)}In</button>`)+`
+ <div class="kgrid">
+  <div class="kpi k1"><div class="ki">${ic('coin',22)}</div><div><small>TỔNG DOANH THU</small><strong>${money(mc.rev)}</strong>${dlt(mc.rev,pv.rev)}</div></div>
+  <div class="kpi k2"><div class="ki">${ic('down',22)}</div><div><small>TỔNG CHI PHÍ</small><strong>${money(mc.exp)}</strong>${dlt(mc.exp,pv.exp)}</div></div>
+  <div class="kpi k3"><div class="ki">${ic('trend',22)}</div><div><small>LỢI NHUẬN</small><strong>${money(mc.profit)}</strong>${dlt(mc.profit,pv.profit)}</div></div>
+  <div class="kpi k4"><div class="ki">${ic('pct',22)}</div><div><small>TỶ SUẤT LỢI NHUẬN</small><strong>${fp(mc.margin)}</strong>${hasPrev?`<span class="dl">${dm>=0?'▲':'▼'} ${fp(Math.abs(dm)).replace('%','')} điểm % so với ${ymShort(pm)}</span>`:`<span class="dl">Chưa có dữ liệu ${ymShort(pm)}</span>`}</div></div>
+ </div>
+ <div class="kgrid">
+  <div class="kpi2"><div class="ki">${ic('users',20)}</div><div><small>Học viên đang học</small><strong>${stuN}</strong></div></div>
+  <div class="kpi2 b"><div class="ki">${ic('cal',20)}</div><div><small>Lớp đang hoạt động</small><strong>${clsN}</strong></div></div>
+  <div class="kpi2 a"><div class="ki">${ic('alert',20)}</div><div><small>Học viên chưa đóng đủ học phí</small><strong>${dueStu}</strong></div></div>
+  <div class="kpi2 r"><div class="ki">${ic('wallet',20)}</div><div><small>Học phí còn nợ</small><strong>${money(debt)}</strong></div></div>
+ </div>
+<div class="g2">
+  <div class="card"><h3>${ic('cal')}${isCur?'Lịch học hôm nay':'Lịch học tuần đầu '+ymShort(ym)}</h3>${tbl(['Ngày','Giờ','Lớp','Sân','Điểm danh'],sesRows)}</div>
+  <div class="card"><h3>${ic('alert')}Học viên cần đóng học phí</h3>${tbl(['Học viên','Lớp','>Còn thiếu','Trạng thái'],debtRows)}</div>
+  <div class="card"><h3>${ic('coin')}Các khoản thu gần đây</h3>${tbl(['Ngày','Nội dung','>Số tiền'],rcRows)}</div>
+  <div class="card"><h3>${ic('down')}Các khoản chi gần đây</h3>${tbl(['Ngày','Nội dung','>Số tiền'],exRows)}</div>
+  <div class="card"><h3>${ic('wallet')}Các khoản cần thanh toán</h3>${tbl(['Khoản','Nguồn','>Số tiền'],due)}</div>
+  <div class="card"><h3>${ic('doc')}Tổng hợp kết quả kinh doanh ${ymShort(ym)}</h3><div class="list-sm">
+   <div><span>Thu học phí</span><b class="pos">${money(mc.revTuition)}</b></div><div><span>Thu khác (đồng phục, tài trợ…)</span><b class="pos">${money(mc.revOther)}</b></div>
+   <div><span><b>Tổng doanh thu thực thu</b></span><b class="pos">${money(mc.rev)}</b></div>${bk}
+   <div><span><b>Tổng chi phí</b></span><b class="neg">${money(mc.exp)}</b></div>
+   <div><span><b>Lợi nhuận</b></span><b>${pn(mc.profit)}</b></div><div><span>Tỷ suất lợi nhuận</span><b>${fp(mc.margin)}</b></div></div></div>
+ </div>`},
+};
+function destroyCharts(){S.charts.forEach(c=>{try{c.destroy()}catch(e){}});S.charts=[]}
+
+/* ---- Classes & schedule ---- */
+const schedTxt=c=>`${[1,2,3,4,5,6,0].filter(d=>(c.days||[]).includes(d)).map(d=>DOW[d]).join(', ')} · ${c.start}–${c.end}`;
+PAGES.classes={t:'Lớp học & Lịch học',i:'cal',r(){
+ const ym=cur(),tab=gt('classes','list');
+ let body='';
+ if(tab==='list'){
+  const rows=DB.classes.map(c=>{const n=DB.students.filter(s=>s.classId===c.id&&activeIn(s,ym)).length;return`<tr><td><b>${esc(c.code)}</b></td><td>${esc(c.name)}</td><td>${esc(c.ageGroup)}</td><td>${staffName(c.coachId)}</td><td>${staffName(c.assistantId)}</td><td>${esc(c.venue)}</td><td>${schedTxt(c)}</td><td class="r">${money(c.fee)}</td><td class="r">${n}</td><td class="r">${sessions(c,ym).length}</td><td>${stB(c.status)}</td><td class="act">${ab('clsAssign','user','Phân công HLV / trợ giảng',`data-id="${c.id}"`)}${ab('clsEdit','edit','Sửa',`data-id="${c.id}"`)}${ab('clsDel','trash','Xóa',`data-id="${c.id}"`,'del')}</td></tr>`}).join('');
+  body=`<div class="card">${tbl(['Mã','Tên lớp','Nhóm tuổi','HLV chính','Trợ giảng','Sân','Lịch học','>Học phí/tháng','>Sĩ số','>Buổi/'+ymShort(ym),'Trạng thái',''],rows)}</div>`;
+ }else{
+  const first=(dowOf(dateOf(ym,1))+6)%7,all={};DB.classes.forEach((c,i)=>sessions(c,ym).forEach(s=>{(all[s.date]=all[s.date]||[]).push({...s,ci:i})}));
+  let cells=['T2','T3','T4','T5','T6','T7','CN'].map(d=>`<div class="h">${d}</div>`).join('')+'<div class="d o"></div>'.repeat(first);
+  for(let d=1;d<=dim(ym);d++){const ds=dateOf(ym,d);cells+=`<div class="d ${ds===todayStr()?'t':''}"><span>${d}</span>${(all[ds]||[]).sort(by(s=>s.start)).map(s=>{const c=DB.classes[s.ci];return`<button class="chip" style="background:${CLR[s.ci%CLR.length]}" data-act="sess" data-c="${c.id}" data-d="${s.date}" data-k="${s.kind}" data-ch="${s.chId||''}" title="${esc(c.name)} · ${esc(s.venue)}">${DB.attendance[attKey(c.id,s.date)]?'✓ ':''}${s.kind==='extra'?'+ ':s.kind==='moved'?'↪ ':''}${s.start} ${esc(c.code)}<small>${esc(s.venue)}</small></button>`}).join('')}</div>`}
+  const cnt=DB.classes.map(c=>{const ch=DB.changes.filter(x=>x.classId===c.id);const base=sessions({...c},ym).filter(s=>s.kind==='regular').length;const canc=ch.filter(x=>(x.type==='cancel'||x.type==='move')&&x.date.startsWith(ym)).length;const add=sessions(c,ym).filter(s=>s.kind!=='regular').length;return`<tr><td><b>${esc(c.code)}</b> ${esc(c.name)}</td><td class="r">${base+canc}</td><td class="r">${canc}</td><td class="r">${add}</td><td class="r"><b>${sessions(c,ym).length}</b></td><td class="r"><b>${actualCount(c.id,ym)}</b></td></tr>`}).join('');
+  body=`<div class="card" style="margin-bottom:14px"><h3>${ic('cal')}Lịch học ${ymLabel(ym)} <span class="muted" style="font-weight:500;font-size:12px">– bấm vào buổi học để hủy / dời lịch</span></h3><div class="cal">${cells}</div></div><div class="card"><h3>${ic('check')}Theo dõi số buổi học trong ${ymShort(ym)}</h3>${tbl(['Lớp','>Theo lịch cố định','>Hủy / dời đi','>Thêm / dời đến','>Dự kiến','>Thực tế (đã điểm danh)'],cnt)}</div>`;
+ }
+ return phead('Lớp học & Lịch học',`${DB.classes.length} lớp · ${ymLabel(ym)}`,`<button class="btn primary" data-act="clsAdd">${ic('plus',16)}Thêm lớp</button><button class="btn navy" data-act="sessAdd">${ic('plus',16)}Thêm buổi học bù</button>`)+tabs('classes',[['list','Danh sách lớp'],['cal','Lịch học tháng']],'list')+body}};
+function classForm(c){
+ const coaches=DB.staff.filter(s=>s.role!=='Trợ giảng'),asst=DB.staff.filter(s=>s.role==='Trợ giảng');
+ const o=a=>[['','— Chưa phân công —'],...a.map(s=>[s.id,`${s.name} (${s.code})`])];
+ const days=[1,2,3,4,5,6,0].map(d=>`<label class="chk"><input type="checkbox" name="days" value="${d}" ${(c.days||[]).includes(d)?'checked':''}>${DOW[d]}</label>`).join('');
+ return fld('code','Mã lớp',c.code,{req:1})+fld('name','Tên lớp',c.name,{req:1})+fld('ageGroup','Nhóm tuổi',c.ageGroup,{ph:'VD: 6–8 tuổi'})+fld('fee','Học phí / tháng (đ)',c.fee||0,{type:'number',req:1})
+ +fld('coachId','HLV chính',c.coachId,{type:'select',options:o(coaches)})+fld('assistantId','Trợ giảng',c.assistantId,{type:'select',options:o(asst)})
+ +fld('venue','Địa điểm sân',c.venue,{cls:'full'})+`<div class="fld full"><span>Ngày học trong tuần <i>*</i></span><div>${days}</div></div>`
+ +fld('start','Giờ bắt đầu',c.start||'17:00',{type:'time',req:1})+fld('end','Giờ kết thúc',c.end||'18:30',{type:'time',req:1})
+ +fld('from','Ngày bắt đầu',c.from,{type:'date'})+fld('to','Ngày kết thúc (nếu có)',c.to,{type:'date'})
+ +fld('status','Trạng thái',c.status||'Đang hoạt động',{type:'select',options:['Đang hoạt động','Tạm dừng','Kết thúc'].map(x=>[x,x])})}
+function saveClass(id,d){
+ const days=[].concat(d.days||[]).map(Number);
+ if(!days.length){toast('Hãy chọn ít nhất 1 ngày học','err');return false}
+ if(d.start>=d.end){toast('Giờ kết thúc phải sau giờ bắt đầu','err');return false}
+ if(DB.classes.some(c=>c.code===d.code&&c.id!==id)){toast('Mã lớp đã tồn tại','err');return false}
+ const rec={code:d.code.trim(),name:d.name.trim(),ageGroup:d.ageGroup,coachId:d.coachId,assistantId:d.assistantId,venue:d.venue,days,start:d.start,end:d.end,fee:+d.fee||0,from:d.from||'',to:d.to||'',status:d.status};
+ if(id)Object.assign(DB.classes.find(c=>c.id===id),rec);else DB.classes.push({id:uid('c'),...rec});
+ commit(id?'Đã cập nhật lớp':'Đã thêm lớp');return true}
+
+/* ---- Students ---- */
+function stuBody(){
+ const f=fl('students'),ym=cur();let list=[...DB.students];
+ if(f.q){const q=f.q.toLowerCase();list=list.filter(s=>(s.name+s.code+s.phone+s.parent).toLowerCase().includes(q))}
+ if(f.cls)list=list.filter(s=>s.classId===f.cls);if(f.st)list=list.filter(s=>s.status===f.st);
+ list.sort(by(s=>s.code));
+ const rows=list.map(s=>`<tr><td><b>${esc(s.code)}</b></td><td>${esc(s.name)}</td><td>${vnDate(s.dob)}</td><td>${esc(s.gender)}</td><td>${esc(s.parent)}<br><span class="muted">${esc(s.phone)}</span></td><td>${vnDate(s.joinDate)}</td><td>${className(s.classId)}</td><td class="r">${s.perWeek||'—'}</td><td class="r">${money(s.fee)}</td><td>${stB(s.status)}${s.statusYm&&s.status!=='Đang học'?`<br><span class="muted" style="font-size:11px">từ ${ymShort(s.statusYm)}</span>`:''}</td><td class="act"><button class="btn sm ghost" data-act="stuEdit" data-id="${s.id}">${ic('edit',14)}Sửa</button></td></tr>`).join('');
+ return`<div class="card">${tbl(['Mã HV','Họ tên','Ngày sinh','Giới tính','Phụ huynh / SĐT','Nhập học','Lớp','>Buổi/tuần','>Học phí','Trạng thái',''],rows)}</div>`}
+ICON.pause='<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>';
+PAGES.students={t:'Học viên',i:'users',body:stuBody,r(){
+ const f=fl('students'),ym=cur();
+ return phead('Quản lý học viên',`${DB.students.filter(s=>activeIn(s,ym)).length} đang học trong ${ymShort(ym)} · tổng ${DB.students.length} hồ sơ`,`<button class="btn primary" data-act="stuAdd">${ic('plus',16)}Thêm học viên</button>`)
+ +`<div class="fbar"><input type="search" placeholder="Tìm tên, mã, SĐT…" value="${esc(f.q||'')}" data-f="students.q"><select data-f="students.cls"><option value="">Tất cả lớp</option>${DB.classes.map(c=>`<option value="${c.id}" ${f.cls===c.id?'selected':''}>${esc(c.code+' · '+c.name)}</option>`).join('')}</select><select data-f="students.st"><option value="">Mọi trạng thái</option>${['Đang học','Bảo lưu','Nghỉ học'].map(x=>`<option ${f.st===x?'selected':''}>${x}</option>`).join('')}</select></div><div id="listBody">${stuBody()}</div>`}};
+function stuForm(s){return fld('code','Mã học viên',s.code,{req:1})+fld('name','Họ tên',s.name,{req:1})+fld('dob','Ngày sinh',s.dob,{type:'date',req:1})+fld('gender','Giới tính',s.gender||'Nam',{type:'select',options:[['Nam','Nam'],['Nữ','Nữ']]})
+ +fld('parent','Họ tên phụ huynh',s.parent)+fld('phone','SĐT phụ huynh',s.phone,{req:1})+fld('joinDate','Ngày nhập học',s.joinDate,{type:'date',req:1})
+ +fld('classId','Lớp đang học',s.classId,{type:'select',options:clsOpts('— Chọn lớp —'),req:1})+fld('fee','Học phí / tháng (đ)',s.fee,{type:'number',req:1,help:'Có thể khác học phí lớp (giảm giá, anh chị em…)'})+fld('perWeek','Số buổi học / tuần',s.perWeek||1,{type:'number',req:1,attrs:'min="1" max="7"'})}
+const stuActions=s=>`<div class="fld full"><span>Thao tác khác</span><div class="acts"><button type="button" class="btn sm ghost" data-act="stuMove" data-id="${s.id}">${ic('swap',14)}Chuyển lớp</button>${s.status==='Đang học'?`<button type="button" class="btn sm ghost" data-act="stuSt" data-id="${s.id}" data-s="Bảo lưu">${ic('pause',14)}Bảo lưu</button>`:`<button type="button" class="btn sm ghost" data-act="stuSt" data-id="${s.id}" data-s="Đang học">${ic('refresh',14)}Cho học lại</button>`}${s.status!=='Nghỉ học'?`<button type="button" class="btn sm ghost" data-act="stuSt" data-id="${s.id}" data-s="Nghỉ học">${ic('x',14)}Nghỉ học</button>`:''}<button type="button" class="btn sm red" data-act="stuDel" data-id="${s.id}">${ic('trash',14)}Xóa học viên</button></div></div>`
+
+/* ---- Attendance ---- */
+function attInit(){const ym=cur();if(!DB.classes.find(c=>c.id===S.att.cid))S.att.cid=(DB.classes[0]||{}).id||'';
+ if(!S.att.date||!S.att.date.startsWith(ym)){const c=DB.classes.find(x=>x.id===S.att.cid);const ss=c?sessions(c,ym):[];const t=todayStr();S.att.date=ss.find(s=>s.date===t)?t:ss.length?ss[0].date:dateOf(ym,1)}}
+function attStats(ym,cid){const st={};Object.values(DB.attendance).filter(a=>a.classId===cid&&a.date.startsWith(ym)).forEach(a=>Object.entries(a.records).forEach(([sid,v])=>{(st[sid]=st[sid]||{P:0,AP:0,AU:0,N:0})[v]++}));return st}
+const attRate=x=>{const t=x.P+x.AP+x.AU;return t?x.P/t*100:null};
+PAGES.attendance={t:'Điểm danh',i:'check',r(){
+ attInit();const ym=cur(),c=DB.classes.find(x=>x.id===S.att.cid);
+ if(!c)return phead('Điểm danh','')+'<div class="card empty">Hãy tạo lớp học trước.</div>';
+ const date=S.att.date,rec=DB.attendance[attKey(c.id,date)],ss=sessions(c,ym),sched=ss.find(s=>s.date===date);
+ const eff=effStaff(rec,c),nm=id=>{const x=DB.staff.find(y=>y.id===id);return x?x.name:'—'};
+ const tsel=(name,def,cv)=>`<select name="${name}" data-def="${esc(def||'')}" data-sub="1"><option value="" ${!cv?'selected':''}>— Không có —</option>${DB.staff.filter(x=>x.active!==false||x.id===cv||x.id===def).map(x=>`<option value="${x.id}" ${x.id===cv?'selected':''}>${esc(x.name)} (${esc(x.role)})</option>`).join('')}</select>`;
+ const teach=`<div class="card" style="margin-bottom:14px"><h3>${ic('staff')}HLV & trợ giảng buổi ${vnDate(date)}</h3><div class="g2" style="margin:0"><div class="fld"><span>HLV chính</span>${tsel('coachSel',c.coachId,eff.coach)}<input name="coachNote" placeholder="Lý do (VD: dạy thay)" value="${esc(rec?rec.coachNote||'':'')}"></div><div class="fld"><span>Trợ giảng</span>${tsel('asstSel',c.assistantId,eff.asst)}<input name="asstNote" placeholder="Lý do (VD: dạy thay)" value="${esc(rec?rec.assistantNote||'':'')}"></div></div></div>`;
+ const hrows=Object.values(DB.attendance).filter(a=>a.classId===c.id&&a.date.startsWith(ym)).sort(by(a=>a.date)).map(a=>{const e=effStaff(a,c);return`<tr><td>${vnDate(a.date)}</td><td>${esc(nm(e.coach))} ${e.coach!==c.coachId?B('Thay thế','amber'):''}</td><td>${esc(a.coachNote||'')}</td><td>${esc(nm(e.asst))} ${e.asst!==c.assistantId?B('Thay thế','amber'):''}</td><td>${esc(a.assistantNote||'')}</td></tr>`}).join('');
+ const studs=DB.students.filter(s=>s.classId===c.id&&activeIn(s,ym)&&s.joinDate<=date).sort(by(s=>s.name));
+ const rows=studs.map(s=>{const cv=rec?rec.records[s.id]||'P':'P';return`<div class="attrow"><div><b>${esc(s.name)}</b> <span class="muted">${esc(s.code)}</span></div>${Object.keys(ATT).map(k=>`<div class="rad"><label><input type="radio" name="a_${s.id}" value="${k}" ${cv===k?'checked':''}>${ATT[k]}</label></div>`).join('')}</div>`}).join('');
+ const bar=ss.map(s=>`<button class="${s.date===date?'on':''} ${DB.attendance[attKey(c.id,s.date)]?'ok':''}" data-act="attPick" data-d="${s.date}">${DB.attendance[attKey(c.id,s.date)]?'✓ ':''}${s.date.slice(8)}/${s.date.slice(5,7)}</button>`).join('');
+ const stt=attStats(ym,c.id),nSes=Object.values(DB.attendance).filter(a=>a.classId===c.id&&a.date.startsWith(ym)).length;
+ const srows=DB.students.filter(s=>s.classId===c.id&&activeIn(s,ym)).map(s=>{const x=stt[s.id]||{P:0,AP:0,AU:0,N:0},r=attRate(x);return`<tr><td>${esc(s.name)}</td><td class="r">${x.P}</td><td class="r">${x.AP}</td><td class="r">${x.AU}</td><td class="r">${x.N}</td><td class="r"><b>${r===null?'—':fp(r)}</b></td></tr>`}).join('');
+ const all=sum(Object.values(stt),x=>x.P),tot=sum(Object.values(stt),x=>x.P+x.AP+x.AU);
+ return phead('Điểm danh',`${esc(c.code)} · ${ymLabel(ym)} – thống kê chuyên cần & số buổi thực tế`)
+ +`<div class="fbar"><select data-chg="attClass">${DB.classes.map(x=>`<option value="${x.id}" ${x.id===c.id?'selected':''}>${esc(x.code+' · '+x.name)}</option>`).join('')}</select><input type="date" value="${date}" min="${dateOf(ym,1)}" max="${dateOf(ym,dim(ym))}" data-chg="attDate">${sched?B(sched.kind==='regular'?'Buổi học theo lịch':'Buổi học bù / dời lịch','green'):B('Ngoài lịch học – tính là buổi bù','amber')}${rec?B('Đã lưu '+new Date(rec.savedAt).toLocaleString('vi-VN'),'blue'):B('Chưa điểm danh','gray')}</div>
+ <div class="sesbar">${bar||'<span class="muted">Lớp chưa có buổi học theo lịch trong tháng này</span>'}</div>
+ ${teach}<div class="card" style="margin-bottom:14px"><h3>${ic('check')}Điểm danh ngày ${vnDate(date)}</h3>${studs.length?rows:'<div class="empty">Lớp chưa có học viên đang học vào ngày này</div>'}
+ ${studs.length?`<div class="acts" style="margin-top:12px"><button class="btn primary" data-act="attSave">${ic('save',16)}Lưu điểm danh</button><button class="btn ghost" data-act="attAll">Tất cả có mặt</button>${rec?`<button class="btn red" data-act="attDel">${ic('trash',16)}Xóa điểm danh buổi này</button>`:''}</div>`:''}</div>
+ <div class="stats"><div class="st"><small>Buổi thực tế (đã điểm danh)</small><b>${nSes}</b></div><div class="st"><small>Buổi theo lịch</small><b>${ss.length}</b></div><div class="st g"><small>Tỷ lệ chuyên cần của lớp</small><b>${tot?fp(all/tot*100):'—'}</b></div><div class="st"><small>Chuyên cần = Có mặt / (Có mặt + Vắng)</small><b style="font-size:13px">Nghỉ học không tính</b></div></div>
+ <div class="card" style="margin-bottom:14px"><h3>${ic('chart')}Thống kê chuyên cần ${ymShort(ym)}</h3>${tbl(['Học viên','>Có mặt','>Vắng có phép','>Vắng không phép','>Nghỉ học','>Chuyên cần'],srows)}</div>
+ <div class="card"><h3>${ic('staff')}Lịch sử giảng dạy ${ymShort(ym)}</h3>${tbl(['Ngày','HLV chính','Ghi chú HLV','Trợ giảng','Ghi chú trợ giảng'],hrows)}</div>`}};
+
+/* ---- Tuition & revenue ---- */
+function tuiBody(){
+ const tab=gt('tuition','fees'),ym=cur(),f=fl('tuition');
+ if(tab==='fees'){let tr=tuitionRows(ym);
+  if(f.q){const q=f.q.toLowerCase();tr=tr.filter(x=>((x.s?x.s.name+x.s.code:'')).toLowerCase().includes(q))}
+  if(f.cls)tr=tr.filter(x=>x.t.classId===f.cls);if(f.st)tr=tr.filter(x=>x.status===f.st);
+  const rows=tr.map(x=>`<tr><td><b>${esc(x.s?x.s.name:'(đã xóa)')}</b></td><td>${className(x.t.classId)}</td><td>${ymShort(x.t.ym)}</td><td class="r">${money(x.c?x.c.fee:0)}</td><td class="r">${money(x.t.due)}</td><td class="r pos">${money(x.paid)}</td><td class="r ${x.rem?'neg':''}">${money(x.rem)}</td><td>${vnDate(x.payDate)||'—'}</td><td>${stB(x.status)}<br><span class="muted" style="font-size:11px">hạn ${vnDate(x.t.dueDate)}</span></td><td class="act">${x.rem>0?ab('recvFor','coin','Thu tiền',`data-id="${x.t.id}"`,'pay'):''}${ab('tuiEdit','edit','Sửa',`data-id="${x.t.id}"`)}${ab('tuiDel','trash','Xóa',`data-id="${x.t.id}"`,'del')}</td></tr>`).join('');
+  return`<div class="card">${tbl(['Học viên','Lớp','Tháng thu','>Mức học phí lớp','>Phải đóng','>Đã đóng','>Còn thiếu','Ngày thanh toán','Trạng thái',''],rows,`<tr><td colspan="4">Tổng</td><td class="r">${money(sum(tr,x=>x.t.due))}</td><td class="r">${money(sum(tr,x=>x.paid))}</td><td class="r">${money(sum(tr,x=>x.rem))}</td><td colspan="3"></td></tr>`)}</div>`}
+ let rc=DB.receipts.filter(r=>r.date.startsWith(ym));if(tab==='other')rc=rc.filter(r=>r.type!=='tuition');
+ else{if(f.type==='tuition')rc=rc.filter(r=>r.type==='tuition');if(f.type==='other')rc=rc.filter(r=>r.type!=='tuition')}
+ if(f.q2){const q=f.q2.toLowerCase();rc=rc.filter(r=>(r.code+r.content+r.payer).toLowerCase().includes(q))}
+ rc.sort((a,b)=>b.date.localeCompare(a.date)||b.code.localeCompare(a.code));
+ const rows=rc.map(r=>{const s=DB.students.find(x=>x.id===r.studentId);return`<tr><td><b>${esc(r.code)}</b></td><td>${vnDate(r.date)}</td><td>${r.type==='tuition'?B('Học phí','green'):B(r.otherCat||'Thu khác','blue')}</td><td>${esc(r.payer)}</td><td>${esc(s?s.name:'—')}</td><td>${classCode(r.classId)}</td><td>${esc(r.content)}</td><td class="r pos"><b>${money(r.amount)}</b></td><td>${esc(r.method)}</td>${audTd('receipts',r.id)}<td class="act">${ab('rcEdit','edit','Sửa',`data-id="${r.id}"`)}${ab('rcVoid','x','Hủy phiếu',`data-id="${r.id}"`,'del')}${ab('rcDel','trash','Xóa',`data-id="${r.id}"`,'del')}</td></tr>`}).join('')+voidRc(ym);
+ let extra='';
+ if(tab==='other'){const g={};rc.forEach(r=>{const k=r.otherCat||'Thu khác';g[k]=(g[k]||0)+ +r.amount});extra=`<div class="stats">${OTHER_CATS.map(k=>`<div class="st g"><small>${k}</small><b>${money(g[k]||0)}</b></div>`).join('')}</div>`}
+ return extra+`<div class="card">${tbl(['Mã phiếu','Ngày thu','Loại','Người nộp','Học viên','Lớp','Nội dung','>Số tiền','Hình thức','Người nhập / sửa',''],rows,`<tr><td colspan="7">Tổng thực thu</td><td class="r">${money(sum(rc,r=>r.amount))}</td><td colspan="3"></td></tr>`)}</div>`}
+PAGES.tuition={t:'Học phí & Doanh thu',i:'wallet',body:tuiBody,r(){
+ const ym=cur(),tab=gt('tuition','fees'),f=fl('tuition'),tr=tuitionRows(ym),mc=monthCalc(ym);
+ let filters='';
+ if(tab==='fees')filters=`<input type="search" placeholder="Tìm học viên…" value="${esc(f.q||'')}" data-f="tuition.q"><select data-f="tuition.cls"><option value="">Tất cả lớp</option>${DB.classes.map(c=>`<option value="${c.id}" ${f.cls===c.id?'selected':''}>${esc(c.code)}</option>`).join('')}</select><select data-f="tuition.st"><option value="">Mọi trạng thái</option>${['Đã đóng','Chưa đóng','Đóng một phần','Quá hạn'].map(x=>`<option ${f.st===x?'selected':''}>${x}</option>`).join('')}</select>`;
+ else filters=`<input type="search" placeholder="Tìm phiếu thu…" value="${esc(f.q2||'')}" data-f="tuition.q2">${voidSel('tuition')}${tab==='receipts'?`<select data-f="tuition.type"><option value="">Mọi loại</option><option value="tuition" ${f.type==='tuition'?'selected':''}>Học phí</option><option value="other" ${f.type==='other'?'selected':''}>Thu khác</option></select>`:''}`;
+ return phead('Học phí & Doanh thu',`${ymLabel(ym)} · doanh thu chỉ ghi nhận khi có phiếu thu (đã thanh toán)`,`<button class="btn primary" data-act="rcAdd">${ic('plus',16)}Thêm phiếu thu</button><button class="btn navy" data-act="rcOther">${ic('plus',16)}Thu khác</button><button class="btn amber" data-act="tuiGen">${ic('refresh',16)}Tạo học phí tháng</button><button class="btn ghost" data-act="tuiAdd">${ic('plus',16)}Thêm khoản phải thu</button>`)
+ +`<div class="stats"><div class="st g"><small>Doanh thu thực thu ${ymShort(ym)}</small><b>${money(mc.rev)}</b></div><div class="st"><small>Học phí phải thu của tháng</small><b>${money(sum(tr,x=>x.t.due))}</b></div><div class="st r"><small>Còn nợ</small><b>${money(sum(tr,x=>x.rem))}</b></div><div class="st a"><small>Học viên còn nợ</small><b>${new Set(tr.filter(x=>x.rem>0).map(x=>x.t.studentId)).size}</b></div></div>`
+ +tabs('tuition',[['fees','Học phí'],['receipts','Phiếu thu'],['other','Doanh thu khác']],'fees')+`<div class="fbar">${filters}</div><div id="listBody">${tuiBody()}</div>`}};
+function openReceipt(r){
+ const isEdit=!!r.id,E={};const date=r.date||defDate();
+ const body=fld('date','Ngày thu',date,{type:'date',req:1})+fld('rtype','Loại khoản thu',r.rtype||'tuition',{type:'select',options:[['tuition','Học phí'],['other','Doanh thu khác']]})
+ +fld('studentId','Học viên',r.studentId||'',{type:'select',options:[['','— Không chọn —'],...DB.students.map(s=>[s.id,`${s.name} (${s.code})`])]})
+ +`<label class="fld" id="tuiWrap"><span>Khoản học phí cần thu <i>*</i></span><select name="tuitionId"></select></label>`
+ +`<label class="fld" id="catWrap"><span>Nhóm thu khác</span><select name="otherCat">${OTHER_CATS.map(x=>`<option ${x===r.otherCat?'selected':''}>${x}</option>`).join('')}</select></label>`
+ +fld('classId','Lớp',r.classId||'',{type:'select',options:clsOpts('— Không gắn lớp —')})+fld('amount','Số tiền thu (đ)',r.amount||'',{type:'number',req:1})
+ +fld('method','Hình thức thanh toán',r.method||'Tiền mặt',{type:'select',options:METHODS.map(x=>[x,x])})+fld('payer','Người nộp',r.payer||'')
+ +fld('content','Nội dung thu',r.content||'',{cls:'full',req:1})+fld('note','Ghi chú',r.note||'',{cls:'full'});
+ modal(isEdit?'Sửa phiếu thu '+esc(r.code):'Thêm phiếu thu',body,d=>{
+  const amt=+d.amount;if(!(amt>0)){toast('Số tiền phải lớn hơn 0','err');return false}
+  let tu=null;if(d.rtype==='tuition'){tu=DB.tuitions.find(t=>t.id===d.tuitionId);if(!tu){toast('Hãy chọn khoản học phí cần thu (hoặc tạo ở nút "Tạo học phí tháng")','err');return false}const rem=remaining(tu,r.id);if(amt>rem){toast(`Số tiền vượt phần còn thiếu (${money(rem)})`,'err');return false}}
+  const rec={date:d.date,type:d.rtype,studentId:tu?tu.studentId:d.studentId,classId:tu?tu.classId:d.classId,tuitionId:tu?tu.id:'',otherCat:d.rtype==='other'?d.otherCat:'',content:d.content,amount:amt,method:d.method,payer:d.payer,note:d.note};
+  if(isEdit){const o=DB.receipts.find(x=>x.id===r.id);const code=o.date.slice(0,7)===rec.date.slice(0,7)?o.code:rcCode(rec.date);Object.assign(o,rec,{code})}else DB.receipts.push({id:uid('r'),code:rcCode(rec.date),...rec});
+  commit(isEdit?'Đã cập nhật phiếu thu':'Đã ghi phiếu thu – doanh thu đã được cập nhật')},{wide:true,init:f=>{
+  const el=f.elements;
+  const fillT=()=>{const sid=el.studentId.value,P=paidMap();const list=DB.tuitions.filter(t=>t.studentId===sid&&(t.id===r.tuitionId||remaining(t,r.id)>0)).sort(by(t=>t.ym));el.tuitionId.innerHTML=list.map(t=>`<option value="${t.id}">${ymShort(t.ym)} – còn ${money(remaining(t,r.id))}</option>`).join('')||'<option value="">(Không có khoản phải thu – hãy chọn học viên)</option>';if(r.tuitionId&&list.some(t=>t.id===r.tuitionId))el.tuitionId.value=r.tuitionId};
+  const tog=()=>{const t=el.rtype.value==='tuition';$('#tuiWrap').style.display=t?'':'none';$('#catWrap').style.display=t?'none':''};
+  const pickT=(fill)=>{const t=DB.tuitions.find(x=>x.id===el.tuitionId.value);if(t&&fill){el.amount.value=remaining(t,r.id);el.classId.value=t.classId;el.content.value=`Học phí ${ymShort(t.ym)}`}};
+  fillT();tog();
+  el.rtype.onchange=()=>{tog();if(el.rtype.value==='other'&&!el.content.value)el.content.value=el.otherCat.value};
+  el.studentId.onchange=()=>{const s=DB.students.find(x=>x.id===el.studentId.value);fillT();if(s){if(!el.payer.value)el.payer.value=s.parent;el.classId.value=s.classId}pickT(true)};
+  el.tuitionId.onchange=()=>pickT(true);
+  el.otherCat.onchange=()=>{if(!isEdit||!r.content)el.content.value=el.otherCat.value};
+ }})}
+
+/* ---- Expenses ---- */
+function expBody(){
+ const f=fl('expenses'),ym=cur(),tab=gt('expenses','list');
+ if(tab==='cats'){
+  const rows=Object.keys(GROUPS).flatMap(g=>DB.expCats.filter(c=>c.group===g).map(c=>{const n=DB.expenses.filter(e=>e.catId===c.id).length;return`<tr><td>${GROUPS[g]}</td><td><b>${esc(c.name)}</b></td><td class="r">${n}</td><td class="act">${ab('catEdit','edit','Sửa',`data-id="${c.id}"`)}${ab('catDel','trash','Xóa',`data-id="${c.id}"`,'del')}</td></tr>`})).join('');
+  return`<div class="card">${tbl(['Nhóm','Danh mục','>Số phiếu chi','' ],rows)}</div>`}
+ if(tab==='rec'){
+  const rows=DB.recurring.map(r=>{const pl=recPlan(r,ym),pend=pl.filter(p=>!DB.expenses.some(e=>e.sourceKey===p.key));const c=catOf(r.catId);
+   return`<tr><td><b>${esc(r.name)}</b></td><td>${esc(c?c.name:'')}</td><td class="r">${money(r.amount)} / ${unitOf(r.cycle)}</td><td>${r.classId?className(r.classId):'Tất cả lớp / chung'}</td><td class="r">ngày ${r.payDay}</td><td class="r">${money(sum(pl,p=>p.amount))}</td><td>${!pl.length?B('Không phát sinh','gray'):pend.length?B('Chưa tạo '+pend.length,'amber'):B('Đã tạo','green')}</td><td>${r.active!==false?B('Đang chạy','green'):B('Tạm dừng','gray')}</td><td class="act">${ab('recToggle','pause','Bật/tắt',`data-id="${r.id}"`)}${ab('recEdit','edit','Sửa',`data-id="${r.id}"`)}${ab('recDel','trash','Xóa',`data-id="${r.id}"`,'del')}</td></tr>`}).join('');
+  return`<div class="note info">Khi bấm <b>"Tạo phiếu chi định kỳ"</b>, hệ thống tạo phiếu chi cho ${ymLabel(ym)} (khoản theo buổi = số buổi học thực tế theo lịch × đơn giá). Mỗi khoản chỉ tạo <b>một lần</b> cho mỗi kỳ/lớp – bấm lại sẽ không bị ghi trùng. Lương HLV/trợ giảng được tính ở mục <b>Nhân sự → Bảng lương</b>, không cần tạo định kỳ ở đây để tránh tính trùng.</div><div class="card">${tbl(['Tên khoản','Danh mục','>Đơn giá','Lớp áp dụng','>Ngày chi','>Dự kiến '+ymShort(ym),'Phiếu chi','Trạng thái',''],rows)}</div>`}
+ let list=DB.expenses.filter(e=>e.date.startsWith(ym));
+ if(f.q){const q=f.q.toLowerCase();list=list.filter(e=>(e.content+e.payee+e.payer+e.code+e.note).toLowerCase().includes(q))}
+ if(f.grp)list=list.filter(e=>(catOf(e.catId)||{}).group===f.grp);if(f.cat)list=list.filter(e=>e.catId===f.cat);
+ if(f.cls)list=list.filter(e=>f.cls==='_'?!e.classId:e.classId===f.cls);
+ list.sort((a,b)=>b.date.localeCompare(a.date)||b.code.localeCompare(a.code));
+ const rows=list.map(e=>{const c=catOf(e.catId);return`<tr><td><b>${esc(e.code)}</b></td><td>${vnDate(e.date)}</td><td>${c?`<span class="muted">${GROUPS[c.group].replace('Chi phí ','')} ›</span> ${esc(c.name)}`:'<span class="neg">(danh mục đã xóa)</span>'}</td><td>${esc(e.content)}${e.source==='recurring'?' '+B('Định kỳ','blue'):e.source==='payroll'?' '+B('Lương','amber'):''}</td><td class="r neg"><b>${money(e.amount)}</b></td><td>${classCode(e.classId)}</td><td>${esc(e.payee)}</td><td>${esc(e.payer)}</td>${audTd('expenses',e.id)}<td class="act">${ab('exEdit','edit','Sửa',`data-id="${e.id}"`)}${ab('exVoid','x','Hủy phiếu',`data-id="${e.id}"`,'del')}${ab('exDel','trash','Xóa',`data-id="${e.id}"`,'del')}</td></tr>`}).join('')+voidEx(ym);
+ return`<div class="card">${tbl(['Mã phiếu','Ngày chi','Danh mục','Nội dung','>Số tiền','Lớp','Người nhận','Người chi','Người nhập / sửa',''],rows,`<tr><td colspan="4">Tổng chi phí</td><td class="r">${money(sum(list,e=>e.amount))}</td><td colspan="5"></td></tr>`)}</div>`}
+PAGES.expenses={t:'Chi phí',i:'down',body:expBody,r(){
+ const ym=cur(),tab=gt('expenses','list'),f=fl('expenses'),mc=monthCalc(ym);
+ const acts=tab==='list'?`<button class="btn primary" data-act="exAdd">${ic('plus',16)}Thêm phiếu chi</button><button class="btn amber" data-act="expXlsx">${ic('dl',16)}Xuất Excel</button>`:tab==='rec'?`<button class="btn primary" data-act="recAdd">${ic('plus',16)}Thêm khoản định kỳ</button><button class="btn amber" data-act="recGen">${ic('refresh',16)}Tạo phiếu chi định kỳ ${ymShort(ym)}</button>`:`<button class="btn primary" data-act="catAdd">${ic('plus',16)}Thêm danh mục</button>`;
+ const filt=tab==='list'?`<div class="fbar"><input type="search" placeholder="Tìm phiếu chi…" value="${esc(f.q||'')}" data-f="expenses.q">${voidSel('expenses')}<select data-f="expenses.grp"><option value="">Mọi nhóm</option>${Object.keys(GROUPS).map(g=>`<option value="${g}" ${f.grp===g?'selected':''}>${GROUPS[g]}</option>`).join('')}</select><select data-f="expenses.cat"><option value="">Mọi danh mục</option>${DB.expCats.map(c=>`<option value="${c.id}" ${f.cat===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}</select><select data-f="expenses.cls"><option value="">Mọi lớp</option><option value="_" ${f.cls==='_'?'selected':''}>Chi phí chung</option>${DB.classes.map(c=>`<option value="${c.id}" ${f.cls===c.id?'selected':''}>${esc(c.code)}</option>`).join('')}</select></div>`:'';
+ return phead('Quản lý chi phí',`${ymLabel(ym)} · tổng chi <b>${money(mc.exp)}</b>`,acts)+tabs('expenses',[['list','Phiếu chi'],['rec','Chi phí định kỳ'],['cats','Danh mục chi phí']],'list')+filt+`<div id="listBody">${expBody()}</div>`}};
+function expForm(e){return fld('date','Ngày chi',e.date||defDate(),{type:'date',req:1})+`<label class="fld"><span>Danh mục <i>*</i></span>${catSelect('catId',e.catId||'san1')}</label>`
+ +fld('content','Nội dung',e.content||'',{cls:'full',req:1})+fld('amount','Số tiền (đ)',e.amount||'',{type:'number',req:1})+fld('classId','Lớp liên quan',e.classId||'',{type:'select',options:clsOpts('— Chi phí chung —')})
+ +fld('payee','Người nhận',e.payee||'')+fld('payer','Người thanh toán',e.payer||'Quản lý')+fld('note','Ghi chú',e.note||'',{cls:'full'})}
+function recForm(r){return fld('name','Tên khoản chi',r.name||'',{req:1,cls:'full'})+`<label class="fld"><span>Danh mục <i>*</i></span>${catSelect('catId',r.catId||'san1')}</label>`+fld('amount','Số tiền / 1 đơn vị (đ)',r.amount||'',{type:'number',req:1})
+ +fld('cycle','Chu kỳ',r.cycle||'session',{type:'select',options:[['session','Theo buổi'],['week','Theo tuần'],['month','Theo tháng']],help:'Theo buổi: nhân số buổi học của lớp trong tháng. Theo tuần: nhân số tuần (số ngày Thứ Hai trong tháng).'})
+ +fld('classId','Lớp áp dụng',r.classId||'',{type:'select',options:clsOpts('— Tất cả lớp / chi phí chung —')})+fld('payDay','Ngày thanh toán trong tháng',r.payDay||28,{type:'number',attrs:'min="1" max="31"'})+fld('payee','Người nhận',r.payee||'')
+ +`<label class="fld"><span>Trạng thái</span><select name="active"><option value="1" ${r.active!==false?'selected':''}>Đang chạy</option><option value="0" ${r.active===false?'selected':''}>Tạm dừng</option></select></label>`}
+
+/* ---- Staff ---- */
+const PAYT={fixed:'Lương cố định / tháng',session:'Lương theo buổi',mixed:'Cố định + theo buổi'};
+PAGES.staff={t:'Nhân sự',i:'staff',r(){
+ const ym=cur(),tab=gt('staff','list');let body='';
+ if(tab==='list'){
+  const rows=DB.staff.map(s=>{const cls=DB.classes.filter(c=>c.coachId===s.id||c.assistantId===s.id);return`<tr><td><b>${esc(s.code)}</b></td><td>${esc(s.name)}</td><td>${esc(s.phone)}</td><td>${B(s.role,s.role==='Trợ giảng'?'blue':'green')}</td><td>${cls.map(c=>esc(c.code)).join(', ')||'—'}</td><td>${PAYT[s.payType]}</td><td class="r">${s.payType!=='session'?money(s.fixedSalary)+'/tháng':'—'}${s.payType==='mixed'?'<br>':''}${s.payType!=='fixed'?money(s.sessionRate)+'/buổi':''}</td><td>${s.active!==false?B('Đang làm','green'):B('Nghỉ','gray')}</td><td class="act">${ab('stfEdit','edit','Sửa',`data-id="${s.id}"`)}${ab('stfDel','trash','Xóa',`data-id="${s.id}"`,'del')}</td></tr>`}).join('');
+  body=`<div class="card">${tbl(['Mã NS','Họ tên','SĐT','Chức vụ','Lớp phụ trách','Hình thức trả lương','>Mức lương','Trạng thái',''],rows)}</div>`;
+ }else{
+  const ps=DB.staff.filter(s=>s.active!==false||DB.payroll[s.id+'|'+ym]).map(s=>payrollOf(s,ym));
+  const rows=ps.map(p=>{const stale=p.paid&&p.ex.amount!==p.total;return`<tr class="clk" data-act="payDetail" data-id="${p.st.id}" title="Bấm để xem chi tiết từng buổi"><td><b>${esc(p.st.name)}</b><br><span class="muted">${esc(p.st.code)}</span></td><td>${esc(p.st.role)}</td><td>${p.cls.map(c=>esc(c.code)).join(', ')||'—'}</td><td class="r">${p.planned}</td><td class="r"><b>${p.actual}</b></td><td class="r">${money(p.fixed)}</td><td class="r">${money(p.perS)}</td><td class="r">${money(p.allowance)}</td><td class="r">${money(p.bonus)}</td><td class="r"><b>${money(p.total)}</b></td><td>${p.paid?B('Đã chi '+vnDate(p.rec.paidDate),'green'):p.total>0?B('Chưa thanh toán','amber'):B('Không phát sinh','gray')}${stale?'<br>'+B('Phiếu chi lệch: '+money(p.ex.amount),'red'):''}</td><td class="act">${ab('payExtra','edit','Phụ cấp / thưởng',`data-id="${p.st.id}"`)}${!p.paid&&p.total>0?ab('payDo','coin','Chi lương',`data-id="${p.st.id}"`,'pay'):''}${stale?ab('paySync','refresh','Cập nhật phiếu chi theo tổng lương',`data-id="${p.st.id}"`):''}${p.paid?ab('payUndo','x','Hoàn tác thanh toán',`data-id="${p.st.id}"`,'del'):''}</td></tr>`}).join('');
+  body=`<div class="note info">Lương theo buổi = đơn giá × <b>số buổi thực tế</b> (buổi đã điểm danh). Khi bấm <b>Chi lương</b>, hệ thống tạo phiếu chi tương ứng nên lợi nhuận được cập nhật tự động; hoàn tác sẽ xóa phiếu chi đó. <b>Bấm vào dòng của từng người để xem chi tiết từng buổi dạy.</b></div><div class="card">${tbl(['Nhân sự','Chức vụ','Lớp','>Buổi dạy (lịch)','>Buổi thực tế','>Lương cố định','>Lương theo buổi','>Phụ cấp','>Thưởng','>Tổng lương','Thanh toán',''],rows,`<tr><td colspan="9">Tổng lương ${ymShort(ym)}</td><td class="r">${money(sum(ps,p=>p.total))}</td><td colspan="2">Đã chi: ${money(sum(ps.filter(p=>p.paid),p=>p.total))}</td></tr>`)}</div>`;
+ }
+ return phead('Quản lý HLV & Trợ giảng',`${DB.staff.length} nhân sự · ${ymLabel(ym)}`,`<button class="btn primary" data-act="stfAdd">${ic('plus',16)}Thêm nhân sự</button>`)+tabs('staff',[['list','Danh sách nhân sự'],['pay','Bảng lương tháng']],'list')+body}};
+function stfForm(s){return fld('code','Mã nhân sự',s.code,{req:1})+fld('name','Họ tên',s.name,{req:1})+fld('phone','Số điện thoại',s.phone)+fld('role','Chức vụ',s.role||'HLV chính',{type:'select',options:['HLV chính','HLV phụ','Trợ giảng'].map(x=>[x,x])})
+ +fld('payType','Hình thức trả lương',s.payType||'session',{type:'select',options:Object.entries(PAYT)})+fld('active','Trạng thái',s.active===false?'0':'1',{type:'select',options:[['1','Đang làm'],['0','Đã nghỉ']]})
+ +fld('fixedSalary','Lương cố định / tháng (đ)',s.fixedSalary||0,{type:'number'})+fld('sessionRate','Lương / buổi (đ)',s.sessionRate||0,{type:'number'})}
+
+/* ---- Reports ---- */
+PAGES.reports={t:'Báo cáo tài chính',i:'chart',r(){
+ const ym=cur(),tab=gt('reports','month'),R=S.rep;let body='';
+ const yearSel=`<select data-chg="repYear">${YEARS.map(y=>`<option ${y===S.y?'selected':''}>${y}</option>`).join('')}</select>`;
+ if(tab==='month'){
+  const sh=monthSheet(S.y,R.cls),n=sh.length-2;
+  const rows=sh.slice(1,-1).map(r=>`<tr ${r[0]===ymLabel(ym)?'style="background:#EAF6EF"':''}><td><b>${r[0]}</b></td><td class="r">${money(r[1])}</td><td class="r">${money(r[2])}</td><td class="r">${money(r[3])}</td><td class="r">${money(r[4])}</td><td class="r">${money(r[5])}</td><td class="r"><b>${money(r[6])}</b></td><td class="r">${pn(r[7])}</td><td class="r">${fp(r[8])}</td></tr>`).join('');
+  const t=sh[sh.length-1];
+  body=`<div class="fbar">${yearSel}<select data-chg="repCls"><option value="">Toàn trung tâm</option>${DB.classes.map(c=>`<option value="${c.id}" ${R.cls===c.id?'selected':''}>${esc(c.code+' · '+c.name)}</option>`).join('')}</select></div><div class="card">${tbl(['Tháng','>Doanh thu','>Chi phí thuê sân','>Chi phí HLV','>Chi phí trợ giảng','>Chi phí khác','>Tổng chi phí','>Lợi nhuận','>Tỷ suất LN'],rows,`<tr><td>${t[0]}</td><td class="r">${money(t[1])}</td><td class="r">${money(t[2])}</td><td class="r">${money(t[3])}</td><td class="r">${money(t[4])}</td><td class="r">${money(t[5])}</td><td class="r">${money(t[6])}</td><td class="r">${pn(t[7])}</td><td class="r">${fp(t[8])}</td></tr>`)}</div><p class="muted">Chi phí khác = dụng cụ + marketing + vận hành. Tỷ suất lợi nhuận = Lợi nhuận ÷ Doanh thu thực thu × 100%.${R.cls?' Chi phí chung được phân bổ theo cấu hình ở tab "Theo lớp".':''}</p>`;
+ }else{
+  const ag=classAgg(R.scope),tr=ag.reduce((a,x)=>({s:a.s+x.students,r:a.r+x.rev,e:a.e+x.exp}),{s:0,r:0,e:0});
+  const rows=ag.map(a=>`<tr><td><b>${a.general?esc(a.name):esc(a.code)+' · '+esc(a.name)}</b></td><td class="r">${a.general?'—':a.students}</td><td class="r">${money(a.rev)}</td><td class="r">${money(a.exp)}</td><td class="r">${pn(a.profit)}</td><td class="r">${fp(a.margin)}</td></tr>`).join('');
+  body=`<div class="fbar">${yearSel}<select data-chg="repScope"><option value="month" ${R.scope==='month'?'selected':''}>Tháng đang chọn (${ymShort(ym)})</option><option value="year" ${R.scope==='year'?'selected':''}>Cả năm ${S.y}</option></select><select data-chg="allocMode" title="Phân bổ chi phí chung"><option value="students" ${DB.settings.allocMode==='students'?'selected':''}>Chi phí chung: phân bổ theo số học viên</option><option value="revenue" ${DB.settings.allocMode==='revenue'?'selected':''}>Chi phí chung: phân bổ theo doanh thu</option><option value="none" ${DB.settings.allocMode==='none'?'selected':''}>Chi phí chung: không phân bổ</option></select></div>
+  <div class="note ok">Chi phí gắn trực tiếp vào lớp được ghi nhận cho lớp đó. Chi phí <b>chung</b> (không chọn lớp) chỉ được phân bổ <b>một lần</b> theo phương thức bạn chọn, nên tổng các lớp luôn khớp tổng chi phí – không bị tính trùng.</div>
+  <div class="card">${tbl(['Lớp','>Số học viên','>Doanh thu','>Chi phí','>Lợi nhuận','>Tỷ suất LN'],rows,`<tr><td>Tổng cộng</td><td class="r">${tr.s}</td><td class="r">${money(tr.r)}</td><td class="r">${money(tr.e)}</td><td class="r">${pn(tr.r-tr.e)}</td><td class="r">${fp(tr.r>0?(tr.r-tr.e)/tr.r*100:0)}</td></tr>`)}</div>`;
+ }
+ return phead('Báo cáo tài chính & Lợi nhuận',`${ymLabel(ym)} · Lợi nhuận = Doanh thu thực thu − Tổng chi phí`,`<button class="btn amber" data-act="repXlsx">${ic('dl',16)}Excel</button><button class="btn navy" data-act="repCsv">${ic('dl',16)}CSV</button><button class="btn ghost" data-act="print">${ic('print',16)}In / Lưu PDF</button>`)+tabs('reports',[['month','Theo tháng'],['class','Theo lớp']],'month')+body}};
+
+/* ---- Data ---- */
+PAGES.data={t:'Dữ liệu & Sao lưu',i:'db',r(){
+ const size=(JSON.stringify(DB).length/1024).toFixed(1);
+ return phead('Dữ liệu & Sao lưu','Lưu trên Supabase – dùng chung cho các tài khoản được cấp quyền')
+ +`<div class="note ok">Dữ liệu được lưu trên <b>Supabase</b> và dùng chung cho mọi tài khoản được cấp quyền (các máy thấy thay đổi của nhau ngay). Vẫn nên tải file sao lưu JSON định kỳ. Khôi phục, nạp dữ liệu mẫu và xóa tất cả chỉ dành cho <b>Quản trị viên</b>.</div>
+ <div class="stats"><div class="st"><small>Dung lượng dữ liệu</small><b>${size} KB</b></div><div class="st"><small>Học viên / Lớp / Nhân sự</small><b>${DB.students.length} / ${DB.classes.length} / ${DB.staff.length}</b></div><div class="st"><small>Phiếu thu / Phiếu chi</small><b>${DB.receipts.length} / ${DB.expenses.length}</b></div><div class="st"><small>Buổi đã điểm danh</small><b>${Object.keys(DB.attendance).length}</b></div></div>
+ <div class="g2"><div class="card"><h3>${ic('save')}Sao lưu</h3><p class="muted">Tải toàn bộ dữ liệu (2026–2032) thành file JSON.</p><button class="btn primary" data-act="backup">${ic('save',16)}Tải file sao lưu</button></div>
+ <div class="card"><h3>${ic('upload')}Khôi phục</h3><p class="muted">Chọn file JSON đã sao lưu. Dữ liệu hiện tại sẽ được thay thế (có bản lưu tạm trước khi ghi đè).</p><button class="btn navy" data-act="restore">${ic('upload',16)}Chọn file để khôi phục</button></div>
+ <div class="card"><h3>${ic('refresh')}Dữ liệu mẫu</h3><p class="muted">Nạp lại bộ dữ liệu mẫu (2 lớp, 5 học viên, 3 nhân sự…). Dữ liệu hiện tại sẽ bị thay thế.</p><button class="btn amber" data-act="reseed">Nạp dữ liệu mẫu</button></div>
+ <div class="card"><h3>${ic('trash')}Xóa toàn bộ dữ liệu</h3><p class="muted">Bắt đầu hệ thống trống để nhập dữ liệu thật (giữ danh mục chi phí mặc định).</p><button class="btn red" data-act="wipe">Xóa tất cả</button></div></div>`}};
+
+/* =========================== SHELL RENDER =========================== */
+function renderNav(){$('#nav').innerHTML=Object.keys(PAGES).map(k=>`<button class="${S.page===k?'on':''}" data-act="nav" data-p="${k}" title="${PAGES[k].t}">${ic(PAGES[k].i,19)}<span>${PAGES[k].t}</span></button>`).join('')+`<div class="sp"></div><div class="nf">Dữ liệu lưu trên Supabase, dùng chung cho các tài khoản được cấp quyền.</div>`}
+function renderTree(){
+ const has=new Set();[...DB.receipts,...DB.expenses].forEach(x=>has.add(x.date.slice(0,7)));DB.tuitions.forEach(t=>has.add(t.ym));Object.values(DB.attendance).forEach(a=>has.add(a.date.slice(0,7)));
+ let h=`<div class="th"><div class="tt">${ic('folder',20)}<b>Thời gian</b></div><button class="ib" data-act="treeToggle" title="Thu gọn / mở rộng">${ic('chevl')}</button></div><div class="vl">${ymShort(cur())}</div>`;
+ YEARS.forEach(y=>{const op=S.open.has(y);h+=`<div class="yr ${op?'open':''}"><button class="yh" data-act="year" data-y="${y}"><span class="arr">${ic('chev',16)}</span><span class="fo">${ic(op?'folderopen':'folder',19)}</span><b>Năm ${y}</b><em>${TREE[y].length} tháng</em></button>`;
+  if(op){h+='<div class="ml">';TREE[y].forEach(m=>{const k=ymOf(y,m);h+=`<button class="mo ${S.y===y&&S.m===m?'sel':''}" data-act="month" data-y="${y}" data-m="${m}">Tháng ${pad(m)}${has.has(k)?'<i class="dot"></i>':''}</button>`});h+='</div>'}h+='</div>'});
+ h+=`<div class="tfoot"><i style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#F59E0B"></i> Tháng đã có dữ liệu</div>`;
+ $('#tree').innerHTML=h}
+function renderTop(){$('#period').textContent=ymLabel(cur());const n=alerts().length,b=$('#bellN');b.textContent=n;b.style.display=n?'grid':'none'}
+function alerts(){const ym=cur(),a=[],tr=tuitionRows(ym);
+ const over=tr.filter(x=>x.status==='Quá hạn').length,debt=tr.filter(x=>x.rem>0);
+ if(over)a.push({c:'red',t:`${over} khoản học phí quá hạn trong ${ymShort(ym)}`,p:'tuition'});
+ if(debt.length)a.push({c:'amber',t:`${debt.length} học viên còn nợ học phí – ${money(sum(debt,x=>x.rem))}`,p:'tuition'});
+ const need=DB.students.filter(s=>activeIn(s,ym)&&s.status==='Đang học'&&!DB.tuitions.some(t=>t.studentId===s.id&&t.ym===ym)).length;
+ if(need)a.push({c:'blue',t:`${need} học viên chưa có khoản học phí ${ymShort(ym)} → bấm "Tạo học phí tháng"`,p:'tuition'});
+ const pr=DB.staff.filter(s=>s.active!==false).map(s=>payrollOf(s,ym)).filter(p=>p.total>0&&!p.paid);
+ if(pr.length)a.push({c:'amber',t:`${pr.length} bảng lương chưa chi – ${money(sum(pr,p=>p.total))}`,p:'staff'});
+ const rp=pendingRec(ym);if(rp.length)a.push({c:'blue',t:`${rp.length} khoản chi định kỳ chưa tạo phiếu chi`,p:'expenses'});
+ return a}
+function render(){destroyCharts();const p=PAGES[S.page];$('#main').innerHTML=p.r();renderNav();renderTree();renderTop();if(p.after)p.after();applyPerm()}
+function refreshBody(){const p=PAGES[S.page],b=$('#listBody');if(b&&p.body){b.innerHTML=p.body();applyPerm()}}
+
+/* =========================== ACTIONS =========================== */
+const ACT={};
+ACT.nav=d=>{S.page=d.p;document.body.classList.remove('tdo');render();$('#main').scrollTop=0};
+ACT.tab=d=>{S.tab[S.page]=d.k;render()};
+ACT.year=d=>{const y=+d.y;S.open.has(y)?S.open.delete(y):S.open.add(y);renderTree()};
+ACT.month=d=>{S.y=+d.y;S.m=+d.m;S.open.add(S.y);document.body.classList.remove('tdo');render()};
+ACT.treeToggle=()=>{document.body.classList.toggle('tc')};
+ACT.drawer=()=>document.body.classList.toggle('tdo');
+ACT.closeDrawer=()=>document.body.classList.remove('tdo');
+ACT.mclose=()=>closeModal();
+ACT.print=()=>window.print();
+ACT.backup=()=>backupJSON();
+ACT.expAll=()=>exportAll();
+ACT.bell=()=>{const n=$('#notif'),a=alerts();n.innerHTML=`<h4>Thông báo – ${ymLabel(cur())}</h4>${a.map(x=>`<div class="al" data-act="goto" data-p="${x.p}"><i class="${x.c}"></i><div>${esc(x.t)}</div></div>`).join('')||'<div class="empty">Không có cảnh báo nào 🎉</div>'}`;n.classList.toggle('show')};
+ACT.goto=d=>{$('#notif').classList.remove('show');ACT.nav(d)};
+/* classes */
+ACT.clsAdd=()=>modal('Thêm lớp học',classForm({code:nextCode('LH',DB.classes,2),from:ymOf(S.y,S.m)+'-01',days:[]}),d=>saveClass('',d),{wide:true});
+ACT.clsEdit=d=>{const c=DB.classes.find(x=>x.id===d.id);modal('Sửa lớp '+esc(c.code),classForm(c),v=>saveClass(c.id,v),{wide:true})};
+ACT.clsAssign=d=>{const c=DB.classes.find(x=>x.id===d.id),o=a=>[['','— Chưa phân công —'],...a.map(s=>[s.id,`${s.name} (${s.role})`])];
+ modal('Phân công – '+esc(c.name),fld('coachId','HLV chính',c.coachId,{type:'select',options:o(DB.staff.filter(s=>s.role!=='Trợ giảng')),cls:'full'})+fld('assistantId','Trợ giảng',c.assistantId,{type:'select',options:o(DB.staff.filter(s=>s.role==='Trợ giảng')),cls:'full'}),v=>{c.coachId=v.coachId;c.assistantId=v.assistantId;commit('Đã phân công')})};
+ACT.clsDel=d=>{const c=DB.classes.find(x=>x.id===d.id);
+ const used=DB.students.some(s=>s.classId===c.id)||DB.tuitions.some(t=>t.classId===c.id)||DB.receipts.some(r=>r.classId===c.id)||DB.expenses.some(e=>e.classId===c.id)||Object.values(DB.attendance).some(a=>a.classId===c.id);
+ if(used){toast('Lớp đã có học viên/thu/chi/điểm danh – không thể xóa. Hãy đổi trạng thái sang "Kết thúc" và đặt ngày kết thúc.','err');return}
+ if(!ask(`Xóa lớp ${c.code} – ${c.name}?`))return;DB.classes=DB.classes.filter(x=>x.id!==c.id);DB.changes=DB.changes.filter(x=>x.classId!==c.id);DB.recurring.forEach(r=>{if(r.classId===c.id)r.classId=''});commit('Đã xóa lớp')};
+ACT.sess=d=>{const c=DB.classes.find(x=>x.id===d.c);
+ if(d.k!=='regular'){if(ask(`Xóa thay đổi lịch này (${vnDate(d.d)})?${d.k==='moved'?' Buổi học sẽ trở về ngày gốc.':''}`)){DB.changes=DB.changes.filter(x=>x.id!==d.ch);commit('Đã khôi phục lịch')}return}
+ modal(`Buổi ${vnDate(d.d)} – ${esc(c.code)}`,fld('action','Thao tác','cancel',{type:'select',options:[['cancel','Hủy buổi học này'],['move','Dời sang ngày / giờ khác']],cls:'full'})+fld('newDate','Ngày mới (khi dời)',d.d,{type:'date'})+fld('venue','Sân (khi dời)',c.venue)+fld('start','Giờ bắt đầu',c.start,{type:'time'})+fld('end','Giờ kết thúc',c.end,{type:'time'})+fld('note','Lý do / ghi chú','',{cls:'full'}),v=>{
+  if(v.action==='cancel')DB.changes.push({id:uid('ch'),classId:c.id,type:'cancel',date:d.d,note:v.note});
+  else{if(!v.newDate||v.newDate===d.d){toast('Hãy chọn ngày mới khác ngày cũ','err');return false}if(v.start>=v.end){toast('Giờ kết thúc phải sau giờ bắt đầu','err');return false}DB.changes.push({id:uid('ch'),classId:c.id,type:'move',date:d.d,newDate:v.newDate,start:v.start,end:v.end,venue:v.venue,note:v.note})}
+  commit('Đã cập nhật lịch học')})};
+ACT.sessAdd=()=>{if(!DB.classes.length){toast('Chưa có lớp','err');return}const c=DB.classes[0];modal('Thêm buổi học bù',fld('classId','Lớp',c.id,{type:'select',options:clsOpts().slice(1),cls:'full'})+fld('date','Ngày học',dateOf(cur(),1),{type:'date',req:1})+fld('venue','Sân',c.venue)+fld('start','Giờ bắt đầu',c.start,{type:'time',req:1})+fld('end','Giờ kết thúc',c.end,{type:'time',req:1})+fld('note','Ghi chú','',{cls:'full'}),v=>{if(v.start>=v.end){toast('Giờ kết thúc phải sau giờ bắt đầu','err');return false}DB.changes.push({id:uid('ch'),classId:v.classId,type:'add',date:v.date,start:v.start,end:v.end,venue:v.venue,note:v.note});S.tab.classes='cal';commit('Đã thêm buổi học bù')})};
+/* students */
+const ensureTuition=(s,ym)=>{if(s.status==='Đang học'&&activeIn(s,ym)&&!DB.tuitions.some(t=>t.studentId===s.id&&t.ym===ym)){DB.tuitions.push({id:uid('t'),studentId:s.id,classId:s.classId,ym,due:+s.fee||0,dueDate:dateOf(ym,10),note:''});return true}return false};
+ACT.stuAdd=()=>{if(!DB.classes.length){toast('Hãy tạo lớp trước','err');return}
+ modal('Thêm học viên',stuForm({code:nextCode('HV',DB.students),joinDate:defDate(),fee:DB.classes[0].fee,perWeek:DB.classes[0].days.length||1,classId:DB.classes[0].id})+`<label class="chk full"><input type="checkbox" name="mkTui" value="1" checked> Tạo ngay khoản học phí ${ymShort(cur())} cho học viên này</label>`,v=>{
+  if(DB.students.some(s=>s.code===v.code)){toast('Mã học viên đã tồn tại','err');return false}
+  const s={id:uid('s'),code:v.code.trim(),name:v.name.trim(),dob:v.dob,gender:v.gender,parent:v.parent,phone:v.phone,joinDate:v.joinDate,classId:v.classId,fee:+v.fee||0,perWeek:+v.perWeek||1,status:'Đang học',statusYm:''};DB.students.push(s);
+  if(v.mkTui)ensureTuition(s,cur());commit('Đã thêm học viên')},{wide:true,init:f=>{f.elements.classId.onchange=()=>{const c=DB.classes.find(x=>x.id===f.elements.classId.value);if(c){f.elements.fee.value=c.fee;f.elements.perWeek.value=c.days.length||1}}}})};
+ACT.stuEdit=d=>{const s=DB.students.find(x=>x.id===d.id);modal('Sửa học viên '+esc(s.code),stuForm(s)+stuActions(s),v=>{if(DB.students.some(x=>x.code===v.code&&x.id!==s.id)){toast('Mã học viên đã tồn tại','err');return false}Object.assign(s,{code:v.code.trim(),name:v.name.trim(),dob:v.dob,gender:v.gender,parent:v.parent,phone:v.phone,joinDate:v.joinDate,classId:v.classId,fee:+v.fee||0,perWeek:+v.perWeek||1});commit('Đã cập nhật học viên')},{wide:true})};
+ACT.stuMove=d=>{const s=DB.students.find(x=>x.id===d.id);modal('Chuyển lớp – '+esc(s.name),fld('classId','Lớp mới',s.classId,{type:'select',options:clsOpts('— Chọn lớp —').slice(1),cls:'full'})+`<label class="chk full"><input type="checkbox" name="upFee" value="1" checked> Cập nhật học phí theo lớp mới</label><div class="note info full">Các khoản học phí và phiếu thu cũ vẫn giữ nguyên theo lớp lúc phát sinh.</div>`,v=>{if(v.classId===s.classId){toast('Hãy chọn lớp khác','err');return false}const c=DB.classes.find(x=>x.id===v.classId);s.classId=v.classId;if(v.upFee&&c){s.fee=c.fee;s.perWeek=c.days.length||1}const t=DB.tuitions.find(t=>t.studentId===s.id&&t.ym===cur()&&paidMap()[t.id]===undefined);if(t){t.classId=v.classId;if(v.upFee&&c)t.due=c.fee}commit('Đã chuyển lớp')})};
+ACT.stuSt=d=>{const s=DB.students.find(x=>x.id===d.id);if(!ask(`${d.s==='Đang học'?'Cho học viên học lại':'Chuyển sang "'+d.s+'"'}: ${s.name}?${d.s!=='Đang học'?`\nCó hiệu lực từ ${ymLabel(cur())} (các tháng trước giữ nguyên lịch sử).`:''}`))return;s.status=d.s;s.statusYm=d.s==='Đang học'?'':cur();if(d.s==='Đang học')ensureTuition(s,cur());commit('Đã cập nhật trạng thái')};
+ACT.stuDel=d=>{const s=DB.students.find(x=>x.id===d.id);const used=DB.tuitions.some(t=>t.studentId===s.id)||DB.receipts.some(r=>r.studentId===s.id)||Object.values(DB.attendance).some(a=>s.id in a.records);if(used){toast('Học viên đã có học phí/điểm danh – hãy chuyển sang "Nghỉ học" để giữ lịch sử.','err');return}if(!ask(`Xóa học viên ${s.name}?`))return;DB.students=DB.students.filter(x=>x.id!==s.id);commit('Đã xóa học viên')};
+/* attendance */
+const CHG={};
+CHG.attClass=v=>{S.att.cid=v;S.att.date='';render()};
+CHG.attDate=v=>{if(v&&v.startsWith(cur())){S.att.date=v;render()}};
+ACT.attPick=d=>{S.att.date=d.d;render()};
+ACT.attAll=()=>$$('input[type=radio][value=P]',$('#main')).forEach(r=>r.checked=true);
+ACT.attSave=()=>{const c=DB.classes.find(x=>x.id===S.att.cid),date=S.att.date,ym=cur(),records={};DB.students.filter(s=>s.classId===c.id&&activeIn(s,ym)&&s.joinDate<=date).forEach(s=>{const r=document.querySelector(`input[name="a_${s.id}"]:checked`);records[s.id]=r?r.value:'P'});const q=n=>{const e=document.querySelector(`#main [name="${n}"]`);return e?e.value:''};DB.attendance[attKey(c.id,date)]={classId:c.id,date,records,coachId:q('coachSel'),assistantId:q('asstSel'),coachNote:q('coachNote').trim(),assistantNote:q('asstNote').trim(),savedAt:new Date().toISOString()};commit('Đã lưu điểm danh ngày '+vnDate(date))};
+ACT.attDel=()=>{if(!ask('Xóa điểm danh buổi này? Số buổi thực tế và lương theo buổi sẽ thay đổi.'))return;delete DB.attendance[attKey(S.att.cid,S.att.date)];commit('Đã xóa điểm danh')};
+/* tuition & receipts */
+ACT.tuiGen=()=>{const n=genTuition(cur());commit(n?`Đã tạo ${n} khoản học phí ${ymShort(cur())}`:'Tất cả học viên đã có khoản học phí tháng này')};
+ACT.tuiAdd=()=>{if(!DB.students.length){toast('Chưa có học viên','err');return}const s=DB.students[0];modal('Thêm khoản phải thu '+ymShort(cur()),fld('studentId','Học viên',s.id,{type:'select',options:DB.students.map(x=>[x.id,`${x.name} (${x.code})`]),cls:'full'})+fld('due','Số tiền phải đóng (đ)',s.fee,{type:'number',req:1})+fld('dueDate','Hạn đóng',dateOf(cur(),10),{type:'date',req:1}),v=>{if(DB.tuitions.some(t=>t.studentId===v.studentId&&t.ym===cur())){toast('Học viên đã có khoản học phí tháng này','err');return false}const st=DB.students.find(x=>x.id===v.studentId);DB.tuitions.push({id:uid('t'),studentId:st.id,classId:st.classId,ym:cur(),due:+v.due,dueDate:v.dueDate,note:''});commit('Đã thêm khoản phải thu')},{init:f=>{f.elements.studentId.onchange=()=>{const st=DB.students.find(x=>x.id===f.elements.studentId.value);if(st)f.elements.due.value=st.fee}}})};
+ACT.tuiEdit=d=>{const t=DB.tuitions.find(x=>x.id===d.id);modal('Sửa khoản học phí',fld('due','Số tiền phải đóng (đ)',t.due,{type:'number',req:1})+fld('dueDate','Hạn đóng',t.dueDate,{type:'date'}),v=>{const paid=paidMap()[t.id]||0;if(+v.due<paid){toast(`Không thể thấp hơn số đã đóng (${money(paid)})`,'err');return false}t.due=+v.due;t.dueDate=v.dueDate;commit('Đã cập nhật')})};
+ACT.tuiDel=d=>{const t=DB.tuitions.find(x=>x.id===d.id);if((paidMap()[t.id]||0)>0){toast('Khoản này đã có phiếu thu – hãy xóa phiếu thu trước','err');return}if(!ask('Xóa khoản học phí này?'))return;DB.tuitions=DB.tuitions.filter(x=>x.id!==t.id);commit('Đã xóa')};
+ACT.rcAdd=()=>openReceipt({});
+ACT.rcOther=()=>openReceipt({rtype:'other',otherCat:'Đồng phục',content:'Đồng phục'});
+ACT.recvFor=d=>{const t=DB.tuitions.find(x=>x.id===d.id),s=DB.students.find(x=>x.id===t.studentId);openReceipt({rtype:'tuition',tuitionId:t.id,studentId:t.studentId,classId:t.classId,amount:remaining(t),content:`Học phí ${ymShort(t.ym)}`,payer:s?s.parent:''})};
+ACT.rcEdit=d=>{const r=DB.receipts.find(x=>x.id===d.id);openReceipt({...r,rtype:r.type})};
+ACT.rcDel=d=>{const r=DB.receipts.find(x=>x.id===d.id);if(!ask(`Xóa phiếu thu ${r.code} (${money(r.amount)})? Doanh thu sẽ giảm tương ứng.`))return;DB.receipts=DB.receipts.filter(x=>x.id!==r.id);commit('Đã xóa phiếu thu')};
+/* expenses */
+ACT.exAdd=()=>modal('Thêm phiếu chi',expForm({}),v=>{if(!(+v.amount>0)){toast('Số tiền phải lớn hơn 0','err');return false}DB.expenses.push({id:uid('e'),code:exCode(v.date),date:v.date,catId:v.catId,content:v.content,amount:+v.amount,classId:v.classId,payee:v.payee,payer:v.payer,note:v.note,source:'manual',sourceKey:''});commit('Đã ghi phiếu chi – chi phí & lợi nhuận đã cập nhật')},{wide:true});
+ACT.exEdit=d=>{const e=DB.expenses.find(x=>x.id===d.id);modal('Sửa phiếu chi '+esc(e.code),(e.source!=='manual'?`<div class="note full">Phiếu này được tạo tự động (${e.source==='payroll'?'bảng lương':'chi phí định kỳ'}). Nếu sửa tay, số liệu có thể lệch với nguồn.</div>`:'')+expForm(e),v=>{if(!(+v.amount>0)){toast('Số tiền phải lớn hơn 0','err');return false}const code=e.date.slice(0,7)===v.date.slice(0,7)?e.code:exCode(v.date);Object.assign(e,{code,date:v.date,catId:v.catId,content:v.content,amount:+v.amount,classId:v.classId,payee:v.payee,payer:v.payer,note:v.note});commit('Đã cập nhật phiếu chi')},{wide:true})};
+ACT.exDel=d=>{const e=DB.expenses.find(x=>x.id===d.id);if(!ask(`Xóa phiếu chi ${e.code} (${money(e.amount)})? Chi phí sẽ giảm và lợi nhuận tăng tương ứng.`))return;DB.expenses=DB.expenses.filter(x=>x.id!==e.id);commit('Đã xóa phiếu chi')};
+ACT.expXlsx=()=>exportXLSX('DangKhoaSport_PhieuChi_'+cur(),[{name:'Phiếu chi '+cur(),rows:expRows(cur())}]);
+ACT.recAdd=()=>modal('Thêm chi phí định kỳ',recForm({}),v=>saveRec('',v),{wide:true});
+ACT.recEdit=d=>{const r=DB.recurring.find(x=>x.id===d.id);modal('Sửa chi phí định kỳ',recForm(r),v=>saveRec(r.id,v),{wide:true})};
+function saveRec(id,v){if(!(+v.amount>0)){toast('Số tiền phải lớn hơn 0','err');return false}const rec={name:v.name,catId:v.catId,amount:+v.amount,cycle:v.cycle,classId:v.classId,payDay:Math.min(31,Math.max(1,+v.payDay||1)),payee:v.payee,payer:'Quản lý',active:v.active!=='0'};if(id)Object.assign(DB.recurring.find(x=>x.id===id),rec);else DB.recurring.push({id:uid('r'),...rec});commit('Đã lưu chi phí định kỳ')}
+ACT.recToggle=d=>{const r=DB.recurring.find(x=>x.id===d.id);r.active=r.active===false;commit(r.active?'Đã bật':'Đã tạm dừng')};
+ACT.recDel=d=>{const r=DB.recurring.find(x=>x.id===d.id);if(!ask(`Xóa khoản định kỳ "${r.name}"? (Các phiếu chi đã tạo vẫn được giữ.)`))return;DB.recurring=DB.recurring.filter(x=>x.id!==r.id);commit('Đã xóa')};
+ACT.recGen=()=>{const r=genRecurring(cur());commit(r.added?`Đã tạo ${r.added} phiếu chi định kỳ${r.skipped?` (bỏ qua ${r.skipped} phiếu đã có)`:''}`:r.skipped?`Không tạo thêm: ${r.skipped} phiếu đã tồn tại (chống ghi trùng)`:'Không có khoản định kỳ nào phát sinh trong tháng này')};
+ACT.catAdd=()=>modal('Thêm danh mục chi phí',fld('group','Nhóm','vh',{type:'select',options:Object.entries(GROUPS)})+fld('name','Tên danh mục','',{req:1}),v=>{DB.expCats.push({id:uid('cat'),group:v.group,name:v.name.trim()});commit('Đã thêm danh mục')});
+ACT.catEdit=d=>{const c=catOf(d.id);modal('Sửa danh mục',fld('group','Nhóm',c.group,{type:'select',options:Object.entries(GROUPS)})+fld('name','Tên danh mục',c.name,{req:1}),v=>{c.group=v.group;c.name=v.name.trim();commit('Đã cập nhật')})};
+ACT.catDel=d=>{const c=catOf(d.id);if(DB.expenses.some(e=>e.catId===c.id)||DB.recurring.some(r=>r.catId===c.id)){toast('Danh mục đang được sử dụng – không thể xóa','err');return}if(!ask(`Xóa danh mục "${c.name}"?`))return;DB.expCats=DB.expCats.filter(x=>x.id!==c.id);commit('Đã xóa danh mục')};
+/* staff */
+function saveStaff(id,v){if(DB.staff.some(s=>s.code===v.code&&s.id!==id)){toast('Mã nhân sự đã tồn tại','err');return false}const rec={code:v.code.trim(),name:v.name.trim(),phone:v.phone,role:v.role,payType:v.payType,fixedSalary:+v.fixedSalary||0,sessionRate:+v.sessionRate||0,active:v.active!=='0'};if(id)Object.assign(DB.staff.find(s=>s.id===id),rec);else DB.staff.push({id:uid('st'),...rec});commit('Đã lưu nhân sự')}
+ACT.stfAdd=()=>modal('Thêm nhân sự',stfForm({code:nextCode('NS',DB.staff)}),v=>saveStaff('',v),{wide:true});
+ACT.stfEdit=d=>{const s=DB.staff.find(x=>x.id===d.id);modal('Sửa nhân sự '+esc(s.code),stfForm(s),v=>saveStaff(s.id,v),{wide:true})};
+ACT.stfDel=d=>{const s=DB.staff.find(x=>x.id===d.id);if(DB.classes.some(c=>c.coachId===s.id||c.assistantId===s.id)||Object.keys(DB.payroll).some(k=>k.startsWith(s.id+'|'))){toast('Nhân sự đang phụ trách lớp hoặc đã có bảng lương – hãy chuyển trạng thái "Đã nghỉ".','err');return}if(!ask(`Xóa nhân sự ${s.name}?`))return;DB.staff=DB.staff.filter(x=>x.id!==s.id);commit('Đã xóa nhân sự')};
+ACT.payDetail=d=>{
+ const st=DB.staff.find(x=>x.id===d.id),ym=cur(),p=payrollOf(st,ym),rate=st.payType==='fixed'?0:(+st.sessionRate||0);
+ const nm=id=>{const x=DB.staff.find(y=>y.id===id);return x?x.name:'—'},sm=v=>(v<0?'−':'')+money(Math.abs(v));
+ const rows=[];
+ Object.values(DB.attendance).filter(a=>a.date.startsWith(ym)).forEach(a=>{
+  const c=DB.classes.find(x=>x.id===a.classId);if(!c)return;
+  const e=effStaff(a,c),isD=c.coachId===st.id||c.assistantId===st.id,inE=e.coach===st.id||e.asst===st.id;
+  if(isD){rows.push({date:a.date,c,n:1,kind:inE?'Dạy':'Theo lịch',note:''});
+   if(!inE){const co=c.coachId===st.id,rid=co?e.coach:e.asst,nt=co?a.coachNote:a.assistantNote;rows.push({date:a.date,c,n:-1,kind:'Nhờ người thay',note:`${rid?nm(rid):'Không có người'} dạy thay${nt?' – '+nt:''}`})}}
+  else if(inE){const co=e.coach===st.id,own=co?c.coachId:c.assistantId,nt=co?a.coachNote:a.assistantNote;rows.push({date:a.date,c,n:1,kind:'Dạy thay',note:`Thay ${own?nm(own):'vị trí trống'}${nt?' – '+nt:''}`})}
+ });
+ DB.classes.filter(c=>c.coachId===st.id||c.assistantId===st.id).forEach(c=>sessions(c,ym).forEach(x=>{if(!DB.attendance[attKey(c.id,x.date)])rows.push({date:x.date,c,n:0,kind:'Chưa điểm danh',note:'Chưa tính công'})}));
+ rows.sort(by(r=>r.date));
+ const N=sum(rows,r=>r.n),money_=N*rate;
+ const body=rows.map(r=>`<tr><td>${vnDate(r.date)} <span class="muted">(${DOW[dowOf(r.date)]})</span></td><td>${esc(r.c.code)}</td><td>${r.n<0?B(r.kind,'red'):r.n===0?B(r.kind,'gray'):r.kind==='Dạy thay'?B(r.kind,'amber'):B(r.kind,'green')}</td><td class="r"><b class="${r.n<0?'neg':r.n>0?'pos':'muted'}">${r.n>0?'+1':r.n<0?'−1':'0'}</b></td><td class="r ${r.n<0?'neg':''}">${sm(r.n*rate)}</td><td>${esc(r.note)}</td></tr>`).join('');
+ const ft=(l,v,b)=>`<tr><td colspan="4">${l}</td><td class="r">${v}</td><td></td></tr>`;
+ const tb=tbl(['Ngày','Lớp','Nội dung','>Số buổi','>Thành tiền','Ghi chú'],body,`<tr><td colspan="3">Tổng số buổi tính lương</td><td class="r">${N}</td><td class="r">${money(money_)}</td><td></td></tr>`+(p.fixed?ft('Lương cố định',money(p.fixed)):'')+(p.allowance?ft('Phụ cấp',money(p.allowance)):'')+(p.bonus?ft('Thưởng',money(p.bonus)):'')+ft('TỔNG LƯƠNG',money(p.total)));
+ modal(`Chi tiết lương – ${esc(st.name)} · ${ymShort(ym)}`,`<div class="fld full"><div class="note info" style="margin:0">${esc(st.role)} · ${PAYT[st.payType]} · Đơn giá <b>${money(rate)}/buổi</b>. Mỗi buổi dạy +1; buổi nhờ người thay −1 (không tính tiền); buổi dạy thay cho người khác +1.</div>${tb}</div>`,()=>true,{wide:true,ok:'Đóng'})};
+ACT.payExtra=d=>{const s=DB.staff.find(x=>x.id===d.id),p=payrollOf(s,cur());modal(`Phụ cấp / thưởng – ${esc(s.name)}`,fld('allowance','Phụ cấp (đ)',p.allowance,{type:'number'})+fld('bonus','Thưởng (đ)',p.bonus,{type:'number'}),v=>{const k=s.id+'|'+cur();DB.payroll[k]=Object.assign(DB.payroll[k]||{},{allowance:+v.allowance||0,bonus:+v.bonus||0});if(p.paid)syncPayroll(s.id,cur());commit('Đã cập nhật'+(p.paid?' và đồng bộ phiếu chi':''))})};
+ACT.payDo=d=>{const s=DB.staff.find(x=>x.id===d.id),ym=cur(),p=payrollOf(s,ym),t=todayStr();modal(`Chi lương – ${esc(s.name)}`,`<div class="note ok full">Tổng lương ${ymShort(ym)}: <b>${money(p.total)}</b>. Hệ thống sẽ tạo phiếu chi tương ứng.</div>`+fld('date','Ngày chi',t.startsWith(ym)?t:dateOf(ym,dim(ym)),{type:'date',req:1,cls:'full'}),v=>{if(!v.date.startsWith(ym)){toast('Ngày chi phải nằm trong tháng đang chọn để chi phí vào đúng kỳ','err');return false}if(!payPayroll(s.id,ym,v.date)){toast('Không thể chi lương (đã chi hoặc tổng bằng 0)','err');return false}commit('Đã chi lương – phiếu chi đã được tạo')})};
+ACT.payUndo=d=>{const s=DB.staff.find(x=>x.id===d.id);if(!ask(`Hoàn tác thanh toán lương của ${s.name}? Phiếu chi liên quan sẽ bị xóa.`))return;unpayPayroll(s.id,cur());commit('Đã hoàn tác')};
+ACT.paySync=d=>{syncPayroll(d.id,cur());commit('Đã cập nhật phiếu chi theo tổng lương mới')};
+/* reports */
+CHG.repYear=v=>{S.y=+v;if(!TREE[S.y].includes(S.m))S.m=TREE[S.y][0];S.open.add(S.y);render()};
+CHG.repCls=v=>{S.rep.cls=v;render()};CHG.repScope=v=>{S.rep.scope=v;render()};
+CHG.allocMode=v=>{DB.settings.allocMode=v;commit('Đã đổi cách phân bổ chi phí chung')};
+ACT.repXlsx=()=>exportAll();
+ACT.repCsv=()=>{const tab=gt('reports','month');exportCSV(`DangKhoaSport_${tab==='month'?'TheoThang_'+S.y:'TheoLop_'+cur()}`,tab==='month'?monthSheet(S.y,S.rep.cls):classSheet(S.rep.scope))};
+/* data */
+ACT.restore=()=>$('#fileIn').click();
+ACT.reseed=()=>{if(!ask('CẢNH BÁO: thao tác này thay TOÀN BỘ dữ liệu dùng chung của mọi tài khoản bằng dữ liệu mẫu. Tiếp tục?'))return;snapshotPrev();seed();S.y=2026;S.m=12;commit('Đã nạp dữ liệu mẫu')};
+ACT.wipe=()=>{if(!ask('XÓA TOÀN BỘ dữ liệu? Hãy chắc chắn đã sao lưu JSON.'))return;if(!ask('Xác nhận lần cuối: xóa tất cả học viên, lớp, thu, chi…?'))return;snapshotPrev();DB=blank();DB.expCats=defaultCats();S.att={cid:'',date:''};commit('Đã xóa dữ liệu. Bắt đầu nhập dữ liệu mới!')};
+function importObj(o){const d=o&&o.data?o.data:o;if(!d||!Array.isArray(d.classes)||!Array.isArray(d.students)||!Array.isArray(d.receipts)||!Array.isArray(d.expenses))throw new Error('File không đúng định dạng sao lưu của hệ thống');snapshotPrev();DB=norm(d);S.att={cid:'',date:''};save()}
+document.addEventListener('DOMContentLoaded',()=>{});
+
+/* ---------- events ---------- */
+document.addEventListener('click',e=>{
+ const el=e.target.closest('[data-act]');
+ if(el&&el.id==='ov'&&e.target!==el)return;
+ if(el&&ACT[el.dataset.act]){e.preventDefault();ACT[el.dataset.act](el.dataset,el,e)}
+ if(!e.target.closest('#notif')&&!e.target.closest('[data-act=bell]'))$('#notif').classList.remove('show');
+ if(e.target.id==='modal')closeModal()});
+document.addEventListener('input',e=>{const el=e.target;if(el.dataset&&el.dataset.f){const[p,k]=el.dataset.f.split('.');fl(p)[k]=el.value;refreshBody()}});
+document.addEventListener('change',e=>{const el=e.target;if(el.dataset&&el.dataset.chg&&CHG[el.dataset.chg])CHG[el.dataset.chg](el.value);
+ if(el.dataset&&el.dataset.sub){const n=document.querySelector(`#main [name="${el.name==='coachSel'?'coachNote':'asstNote'}"]`);if(n&&el.value!==el.dataset.def&&!n.value)n.value='Dạy thay'}
+ if(el.id==='fileIn'&&el.files[0]){if(!isAdmin()){toast('Chỉ Quản trị viên được khôi phục dữ liệu','err');el.value='';return}const rd=new FileReader();rd.onload=()=>{try{const o=JSON.parse(rd.result);if(!(o&&(o.data||o.classes)))throw new Error('File không đúng định dạng sao lưu');if(!ask('Khôi phục sẽ thay thế toàn bộ dữ liệu hiện tại. Tiếp tục?'))return;importObj(o);render();toast('Đã khôi phục dữ liệu từ file sao lưu')}catch(err){toast('Không thể khôi phục: '+err.message,'err')}};rd.readAsText(el.files[0]);el.value=''}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeModal();$('#notif').classList.remove('show')}});
+
+/* =====================================================================
+   LỚP SUPABASE: đăng nhập, phân quyền, lưu & đồng bộ dữ liệu dùng chung
+   Dữ liệu lưu ở bảng public.records (mỗi dòng = 1 bản ghi), quyền áp dụng
+   bằng RLS trong database (xem setup.sql). Giao diện/logic cũ giữ nguyên.
+   ===================================================================== */
+const ARR=['classes','students','staff','tuitions','receipts','expCats','expenses','recurring','changes'];
+const META_COLS='collection,id,status,cancel_reason,created_by_name,created_at,updated_by_name,updated_at,cancelled_by_name,cancelled_at';
+const PERM_LABEL={receipts:'Phiếu thu & học phí',expenses:'Phiếu chi & chi phí',academy:'Lớp, học viên, điểm danh',hr:'Nhân sự & lương'};
+const COLL_MODULE={receipts:'receipts',tuitions:'receipts',expenses:'expenses',expCats:'expenses',recurring:'expenses',classes:'academy',students:'academy',attendance:'academy',changes:'academy',staff:'hr',payroll:'hr',settings:'admin'};
+const CFG_OK=/^https:\/\/[a-z0-9-]+\.supabase\.(co|in)\/?$/i.test(SUPABASE_URL)&&SUPABASE_PUBLISHABLE_KEY.length>20&&!/YOUR|xxxx/i.test(SUPABASE_URL+SUPABASE_PUBLISHABLE_KEY);
+let sb=null,ME=null,SNAP=new Map(),META=new Map(),CH=null,LASTLOAD=0,DIRTY=false,DENY='',RT=null,SYNC_T=null,SYNCING=Promise.resolve();
+let MEMBERS=[],MEM_LOADED=false;
+ICON.logout='<path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>';
+ICON.key='<circle cx="8" cy="15" r="4"/><path d="M10.8 12.2L20 3M16 7l3 3"/>';
+const isAdmin=()=>!!ME&&ME.role==='admin';
+const canMod=m=>isAdmin()||!!(ME&&ME.perms&&ME.perms[m]===true);
+const modalOpen=()=>$('#modal').classList.contains('show');
+const roleLabel=r=>r==='admin'?'Quản trị viên':'Nhân viên';
+
+/* ---------- định dạng & ghi nhận Người nhập / Người chỉnh sửa ---------- */
+function fmtDT(iso){if(!iso)return'';const d=new Date(iso);if(isNaN(d))return'';return new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Ho_Chi_Minh',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}).format(d).replace(',','')}
+const edited=m=>!!(m&&m.ua&&m.ca&&Math.abs(new Date(m.ua)-new Date(m.ca))>1500);
+function setMeta(r){META.set(r.collection+'|'+r.id,{cb:r.created_by_name,ca:r.created_at,ub:r.updated_by_name,ua:r.updated_at,xb:r.cancelled_by_name,xa:r.cancelled_at,xr:r.cancel_reason})}
+function audTd(c,id,voided){const m=META.get(c+'|'+id);if(!m)return'<td class="aud"><span class="muted">Đang lưu…</span></td>';
+ let h=`Nhập: <b>${esc(m.cb||'—')}</b><br>${fmtDT(m.ca)}`;
+ if(voided)h+=`<br>Hủy: <b>${esc(m.xb||'—')}</b><br>${fmtDT(m.xa)}`;else if(edited(m))h+=`<br>Sửa: <b>${esc(m.ub||'—')}</b><br>${fmtDT(m.ua)}`;
+ return`<td class="aud">${h}</td>`}
+function auditArr(c,id){const m=META.get(c+'|'+id);if(!m)return['','','',''];const e=edited(m);return[m.cb||'',fmtDT(m.ca),e?(m.ub||''):'',e?fmtDT(m.ua):'']}
+const voidSel=p=>{const f=fl(p);return`<select data-f="${p}.void"><option value="">Chỉ phiếu hợp lệ</option><option value="1" ${f.void==='1'?'selected':''}>Kèm phiếu đã hủy</option></select>`};
+function voidRc(ym){const f=fl('tuition'),tab=gt('tuition','fees');if(tab==='fees'||f.void!=='1')return'';
+ let v=DB.voided.filter(x=>x._k==='receipts'&&String(x.date).startsWith(ym));
+ if(tab==='other')v=v.filter(r=>r.type!=='tuition');else{if(f.type==='tuition')v=v.filter(r=>r.type==='tuition');if(f.type==='other')v=v.filter(r=>r.type!=='tuition')}
+ if(f.q2){const q=f.q2.toLowerCase();v=v.filter(r=>(r.code+r.content+r.payer).toLowerCase().includes(q))}
+ return v.sort((a,b)=>b.date.localeCompare(a.date)||b.code.localeCompare(a.code)).map(r=>{const s=DB.students.find(x=>x.id===r.studentId);
+  return`<tr class="voidrow" title="${esc('Lý do hủy: '+(r._reason||''))}"><td><b class="vc">${esc(r.code)}</b><br>${B('Đã hủy','red')}</td><td>${vnDate(r.date)}</td><td>${r.type==='tuition'?B('Học phí','gray'):B(r.otherCat||'Thu khác','gray')}</td><td>${esc(r.payer)}</td><td>${esc(s?s.name:'—')}</td><td>${classCode(r.classId)}</td><td>${esc(r.content)}<br><span class="muted" style="font-size:11px">Lý do hủy: ${esc(r._reason||'')}</span></td><td class="r"><s>${money(r.amount)}</s></td><td>${esc(r.method)}</td>${audTd('receipts',r.id,true)}<td></td></tr>`}).join('')}
+function voidEx(ym){const f=fl('expenses');if(f.void!=='1'||gt('expenses','list')!=='list')return'';
+ let v=DB.voided.filter(x=>x._k==='expenses'&&String(x.date).startsWith(ym));
+ if(f.q){const q=f.q.toLowerCase();v=v.filter(e=>((e.content||'')+(e.payee||'')+(e.payer||'')+e.code+(e.note||'')).toLowerCase().includes(q))}
+ if(f.grp)v=v.filter(e=>(catOf(e.catId)||{}).group===f.grp);if(f.cat)v=v.filter(e=>e.catId===f.cat);
+ if(f.cls)v=v.filter(e=>f.cls==='_'?!e.classId:e.classId===f.cls);
+ return v.sort((a,b)=>b.date.localeCompare(a.date)||b.code.localeCompare(a.code)).map(e=>{const c=catOf(e.catId);
+  return`<tr class="voidrow" title="${esc('Lý do hủy: '+(e._reason||''))}"><td><b class="vc">${esc(e.code)}</b><br>${B('Đã hủy','red')}</td><td>${vnDate(e.date)}</td><td>${c?esc(c.name):'—'}</td><td>${esc(e.content)}<br><span class="muted" style="font-size:11px">Lý do hủy: ${esc(e._reason||'')}</span></td><td class="r"><s>${money(e.amount)}</s></td><td>${classCode(e.classId)}</td><td>${esc(e.payee)}</td><td>${esc(e.payer)}</td>${audTd('expenses',e.id,true)}<td></td></tr>`}).join('')}
+function voidDlg(kind,id){const x=DB[kind].find(y=>y.id===id);if(!x)return;const label=kind==='receipts'?'phiếu thu':'phiếu chi';
+ modal('Hủy '+label+' '+esc(x.code),`<div class="note full">Phiếu bị hủy <b>không còn được tính</b> vào doanh thu / chi phí / công nợ nhưng vẫn được giữ lại để đối chiếu. Thao tác này <b>không thể hoàn tác</b>.</div>`+fld('reason','Lý do hủy phiếu','',{cls:'full',type:'textarea'}),v=>{
+  const r=(v.reason||'').trim();if(!r){toast('Hãy nhập lý do hủy phiếu','err');return false}
+  const i=DB[kind].findIndex(y=>y.id===id);if(i<0)return;const[it]=DB[kind].splice(i,1);DB.voided.push({...it,_k:kind,_reason:r});commit('Đã hủy '+label)},{ok:'Xác nhận hủy phiếu'})}
+
+/* ---------- chuyển đổi DB (bộ nhớ) <-> các dòng trong bảng records ---------- */
+function removeLocal(c,id){if(c==='attendance'||c==='payroll'){delete DB[c][id];return}if(!ARR.includes(c))return;DB[c]=DB[c].filter(x=>x.id!==id);if(c==='receipts'||c==='expenses')DB.voided=DB.voided.filter(x=>!(x._k===c&&x.id===id))}
+function upsertLocal(c,data){const a=DB[c],i=a.findIndex(x=>x.id===data.id);if(i>=0){const o=a[i];Object.keys(o).forEach(k=>delete o[k]);Object.assign(o,data)}else a.push(data)}
+function applyRow(r,fresh){const c=r.collection,id=r.id;setMeta(r);
+ if(c==='settings'){DB.settings=Object.assign(blank().settings,r.data||{});return}
+ if(c==='attendance'||c==='payroll'){DB[c][id]=r.data;return}
+ if(!ARR.includes(c))return;
+ const cancelled=(c==='receipts'||c==='expenses')&&r.status==='cancelled';
+ if(fresh){if(cancelled)DB.voided.push({...r.data,_k:c,_reason:r.cancel_reason||''});else DB[c].push(r.data);return}
+ if(cancelled){DB[c]=DB[c].filter(x=>x.id!==id);const i=DB.voided.findIndex(x=>x._k===c&&x.id===id),it={...r.data,_k:c,_reason:r.cancel_reason||''};if(i>=0)DB.voided[i]=it;else DB.voided.push(it)}
+ else{DB.voided=DB.voided.filter(x=>!(x._k===c&&x.id===id));upsertLocal(c,r.data)}}
+function flatten(){const m=new Map();
+ const put=(c,id,data,st,rs)=>m.set(c+'|'+id,{collection:c,id:String(id),data,status:st||'active',cancel_reason:rs||null});
+ put('settings','main',DB.settings);
+ ARR.forEach(c=>DB[c].forEach(x=>put(c,x.id,x)));
+ Object.entries(DB.attendance).forEach(([k,v])=>put('attendance',k,v));
+ Object.entries(DB.payroll).forEach(([k,v])=>put('payroll',k,v));
+ DB.voided.forEach(x=>{const{_k,_reason,...d}=x;put(_k,d.id,d,'cancelled',_reason)});
+ return m}
+const sortKeys=(k,v)=>v&&typeof v==='object'&&!Array.isArray(v)?Object.keys(v).sort().reduce((a,x)=>(a[x]=v[x],a),{}):v;
+const sig=o=>JSON.stringify([o.data,o.status,o.cancel_reason||null],sortKeys);
+
+/* ---------- ghi dữ liệu lên Supabase (chỉ gửi bản ghi thay đổi) ---------- */
+function setSync(st){const e=$('#syncSt');if(!e)return;e.textContent=st==='saving'?'Đang lưu…':st==='err'?'Lỗi lưu!':'Đã lưu';e.className='tb sync '+st}
+function save(){if(!ME||!DB)return true;DIRTY=true;setSync('saving');clearTimeout(SYNC_T);SYNC_T=setTimeout(()=>{SYNCING=SYNCING.then(doSync)},150);return true}
+function flushNow(){clearTimeout(SYNC_T);SYNCING=SYNCING.then(doSync);return SYNCING}
+async function doSync(){
+ if(!ME||!DB){DIRTY=false;return}
+ const cur=flatten(),up=[],del=[];
+ cur.forEach((v,k)=>{const s=sig(v);if(SNAP.get(k)!==s)up.push([k,v,s])});
+ SNAP.forEach((s,k)=>{if(!cur.has(k))del.push(k)});
+ if(!up.length&&!del.length){DIRTY=false;setSync('ok');return}
+ let curColl='';
+ try{
+  const byC={};up.forEach(u=>(byC[u[1].collection]=byC[u[1].collection]||[]).push(u));
+  for(const c of Object.keys(byC)){curColl=c;const list=byC[c];
+   for(let i=0;i<list.length;i+=200){const part=list.slice(i,i+200);
+    const{data,error}=await sb.from('records').upsert(part.map(([k,v])=>({collection:v.collection,id:v.id,data:v.data,status:v.status,cancel_reason:v.cancel_reason})),{onConflict:'collection,id'}).select(META_COLS);
+    if(error)throw error;part.forEach(([k,v,s])=>SNAP.set(k,s));(data||[]).forEach(setMeta)}}
+  const dC={};del.forEach(k=>{const j=k.indexOf('|');(dC[k.slice(0,j)]=dC[k.slice(0,j)]||[]).push(k.slice(j+1))});
+  for(const c of Object.keys(dC)){curColl=c;const ids=dC[c];
+   for(let i=0;i<ids.length;i+=100){const part=ids.slice(i,i+100);
+    const{error,count}=await sb.from('records').delete({count:'exact'}).eq('collection',c).in('id',part);
+    if(error)throw error;if((count||0)<part.length)throw new Error('RLS_DELETE');
+    part.forEach(id=>{SNAP.delete(c+'|'+id);META.delete(c+'|'+id)})}}
+  DIRTY=false;setSync('ok');
+  if(!modalOpen()){try{refreshBody()}catch(e){}}
+ }catch(err){
+  DIRTY=false;setSync('err');
+  const denied=err&&(err.code==='42501'||/row-level security|RLS_DELETE|permission denied/i.test(err.message||''));
+  const mod=PERM_LABEL[COLL_MODULE[curColl]];
+  toast(denied?`Bạn không có quyền thực hiện thay đổi này${mod?' (cần quyền: '+mod+')':curColl==='settings'?' (chỉ Quản trị viên)':''}. Dữ liệu được tải lại từ máy chủ.`:'Không lưu được dữ liệu: '+((err&&err.message)||err)+'. Dữ liệu được tải lại từ máy chủ.','err');
+  try{await loadAll(true)}catch(e2){toast('Không tải lại được dữ liệu: '+(e2.message||e2),'err')}
+ }}
+window.addEventListener('beforeunload',e=>{if(DIRTY){e.preventDefault();e.returnValue=''}});
+
+/* ---------- tải dữ liệu & đồng bộ tức thời ---------- */
+async function fetchAll(){const out=[];for(let a=0;;a+=1000){const{data,error}=await sb.from('records').select(META_COLS+',data').order('collection').order('id').range(a,a+999);if(error)throw error;out.push(...data);if(data.length<1000)break}return out}
+async function loadAll(quiet){
+ const rows=await fetchAll();
+ DB=blank();META=new Map();rows.forEach(r=>applyRow(r,true));DB=norm(DB);
+ SNAP=new Map();flatten().forEach((v,k)=>SNAP.set(k,sig(v)));
+ LASTLOAD=Date.now();DIRTY=false;
+ if(!rows.length&&isAdmin()){DB.expCats=defaultCats();save()}
+ if(quiet){if(!modalOpen())render()}
+}
+function onRT(p){try{
+ if(!ME||!DB)return;
+ if(p.eventType==='DELETE'){const o=p.old;if(!o||!o.collection)return;const k=o.collection+'|'+o.id;if(!SNAP.has(k))return;removeLocal(o.collection,o.id);SNAP.delete(k);META.delete(k)}
+ else{const r=p.new;if(!r||!r.collection)return;const v={collection:r.collection,id:r.id,data:r.data,status:r.status||'active',cancel_reason:r.cancel_reason||null},k=r.collection+'|'+r.id;
+  setMeta(r);if(SNAP.get(k)===sig(v))return;applyRow(r,false);SNAP.set(k,sig(v))}
+ clearTimeout(RT);RT=setTimeout(()=>{if(ME&&DB&&!modalOpen())render()},350)
+}catch(e){console.error('realtime',e)}}
+function subscribe(){if(CH)sb.removeChannel(CH);CH=sb.channel('dks-records').on('postgres_changes',{event:'*',schema:'public',table:'records'},onRT).subscribe()}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&ME&&DB&&!DIRTY&&!modalOpen()&&Date.now()-LASTLOAD>120000)loadAll(true).catch(()=>{})});
+
+/* ---------- phân quyền trên giao diện (RLS ở database mới là lớp bảo vệ thật) ---------- */
+const ACT_PERM={
+ rcAdd:['receipts'],rcOther:['receipts'],recvFor:['receipts'],rcEdit:['receipts'],tuiGen:['receipts'],tuiAdd:['receipts'],tuiEdit:['receipts'],tuiDel:['receipts'],
+ exAdd:['expenses'],exEdit:['expenses'],recAdd:['expenses'],recEdit:['expenses'],recToggle:['expenses'],recDel:['expenses'],recGen:['expenses'],catAdd:['expenses'],catEdit:['expenses'],catDel:['expenses'],
+ clsAdd:['academy'],clsEdit:['academy'],clsAssign:['academy'],clsDel:['academy'],sess:['academy'],sessAdd:['academy'],stuAdd:['academy'],stuEdit:['academy'],stuMove:['academy'],stuSt:['academy'],stuDel:['academy'],attSave:['academy'],attDel:['academy'],attAll:['academy'],
+ stfAdd:['hr'],stfEdit:['hr'],stfDel:['hr'],payExtra:['hr'],payDo:['hr','expenses'],paySync:['hr','expenses'],
+ rcDel:'admin',exDel:'admin',rcVoid:'admin',exVoid:'admin',payUndo:'admin',restore:'admin',reseed:'admin',wipe:'admin',memAdd:'admin',memEdit:'admin',memRefresh:'admin'};
+function canAct(k){const v=ACT_PERM[k];if(!v)return true;if(v==='admin')return isAdmin();return v.every(canMod)}
+function applyPerm(){$$('#main button[data-act]').forEach(b=>{if(!canAct(b.dataset.act))b.remove()})}
+
+/* ---------- thao tác mới: hủy phiếu, đăng xuất, đổi mật khẩu ---------- */
+ACT.rcVoid=d=>voidDlg('receipts',d.id);
+ACT.exVoid=d=>voidDlg('expenses',d.id);
+ACT.logout=async()=>{if(DIRTY&&!ask('Còn thay đổi chưa lưu xong. Vẫn đăng xuất?'))return;try{await flushNow()}catch(e){}await sb.auth.signOut()};
+ACT.pwd=()=>modal('Đổi mật khẩu',fld('p1','Mật khẩu mới','',{type:'password',req:1,cls:'full',attrs:'minlength="6" autocomplete="new-password"'})+fld('p2','Nhập lại mật khẩu mới','',{type:'password',req:1,cls:'full',attrs:'minlength="6" autocomplete="new-password"'}),v=>{
+ if(v.p1.length<6){toast('Mật khẩu tối thiểu 6 ký tự','err');return false}if(v.p1!==v.p2){toast('Hai mật khẩu không khớp','err');return false}
+ sb.auth.updateUser({password:v.p1}).then(({error})=>toast(error?'Không đổi được mật khẩu: '+error.message:'Đã đổi mật khẩu',error?'err':'ok'))},{ok:'Đổi mật khẩu'});
+
+/* ---------- trang Thành viên (chỉ Quản trị viên) ---------- */
+async function loadMembers(){const{data,error}=await sb.from('members').select('*').order('created_at');if(error){toast('Không tải được danh sách thành viên: '+error.message,'err');return}MEMBERS=data;MEM_LOADED=true;if(S.page==='members'&&!modalOpen())render()}
+const permBoxes=p=>Object.keys(PERM_LABEL).map(k=>`<label class="chk"><input type="checkbox" name="p_${k}" value="1" ${p&&p[k]===true?'checked':''}> ${PERM_LABEL[k]}</label>`).join('');
+const permsFrom=v=>{const o={};Object.keys(PERM_LABEL).forEach(k=>o[k]=v['p_'+k]==='1');return o};
+function memForm(m){const self=m&&m.user_id===ME.id;
+ return fld('email','Email đăng nhập',m?m.email:'',{type:'email',req:1,cls:'full',attrs:m?'readonly':'',help:m?'':'Tài khoản phải được tạo trước trong Supabase → Authentication → Users.'})
+ +fld('name','Tên hiển thị (ghi vào Người nhập / Người chỉnh sửa)',m?m.display_name:'',{req:1,cls:'full'})
+ +fld('role','Vai trò',m?m.role:'staff',{type:'select',options:[['staff','Nhân viên'],['admin','Quản trị viên']],attrs:self?'disabled':''})
+ +fld('active','Trạng thái',m&&!m.active?'0':'1',{type:'select',options:[['1','Đang hoạt động'],['0','Khóa (không truy cập được dữ liệu)']],attrs:self?'disabled':''})
+ +`<div class="fld full"><span>Quyền chỉnh sửa của Nhân viên <small class="muted">(Quản trị viên luôn có đủ quyền; mọi thành viên đều xem được dữ liệu)</small></span><div style="display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:4px">${permBoxes(m?m.perms:{receipts:true,expenses:true,academy:true,hr:false})}</div></div>`
+ +(self?`<div class="note info full">Bạn không thể tự đổi vai trò hoặc khóa chính mình.</div>`:'')}
+ACT.memAdd=()=>modal('Thêm thành viên',memForm(null),v=>{
+ sb.rpc('admin_add_member',{p_email:v.email.trim(),p_display_name:v.name.trim(),p_role:v.role,p_perms:permsFrom(v)}).then(({error})=>{if(error){toast(error.message,'err');return}toast('Đã thêm thành viên');loadMembers()})},{wide:true,ok:'Thêm thành viên'});
+ACT.memEdit=d=>{const m=MEMBERS.find(x=>x.user_id===d.id);if(!m)return;const self=m.user_id===ME.id;
+ modal('Sửa thành viên',memForm(m),v=>{
+  const row={display_name:v.name.trim(),perms:permsFrom(v)};if(!self){row.role=v.role;row.active=v.active==='1'}
+  sb.from('members').update(row).eq('user_id',m.user_id).select().then(({data,error})=>{if(error){toast(error.message,'err');return}if(!data||!data.length){toast('Không có quyền cập nhật thành viên','err');return}toast('Đã cập nhật thành viên');loadMembers()})},{wide:true})};
+ACT.memRefresh=()=>loadMembers();
+const MEMBERS_PAGE={t:'Thành viên',i:'user',after(){if(!MEM_LOADED)loadMembers()},r(){
+ const rows=MEMBERS.map(m=>`<tr><td><b>${esc(m.display_name)}</b>${m.user_id===ME.id?' '+B('Bạn','blue'):''}<br><span class="muted">${esc(m.email)}</span></td><td>${m.role==='admin'?B('Quản trị viên','green'):B('Nhân viên','blue')}</td><td>${m.active?B('Đang hoạt động','green'):B('Đã khóa','red')}</td><td>${m.role==='admin'?'<span class="muted">Toàn quyền</span>':Object.keys(PERM_LABEL).filter(k=>m.perms&&m.perms[k]===true).map(k=>B(PERM_LABEL[k],'gray')).join(' ')||'<span class="muted">Chỉ xem</span>'}</td><td class="act">${ab('memEdit','edit','Sửa',`data-id="${m.user_id}"`)}</td></tr>`).join('');
+ return phead('Quản lý thành viên','Chỉ tài khoản có trong danh sách này (và đang hoạt động) mới truy cập được dữ liệu',`<button class="btn primary" data-act="memAdd">${ic('plus',16)}Thêm thành viên</button><button class="btn ghost" data-act="memRefresh">${ic('refresh',16)}Làm mới</button>`)
+ +`<div class="note info">Cách cấp tài khoản mới: (1) tạo user email + mật khẩu trong <b>Supabase → Authentication → Users</b>; (2) bấm <b>Thêm thành viên</b> và nhập đúng email đó. Muốn thu hồi quyền truy cập: đặt trạng thái <b>Khóa</b>.</div>`
+ +`<div class="card">${tbl(['Thành viên','Vai trò','Trạng thái','Quyền chỉnh sửa',''],rows)}</div>`}};
+
+/* ---------- màn hình đăng nhập & khởi động ---------- */
+function authMsg(t,k){const e=$('#authMsg');e.textContent=t||'';e.className=k||'';e.style.display=t?'block':'none'}
+function showLogin(){document.body.classList.remove('authed');const b=$('#loginBtn');b.disabled=false;b.textContent='Đăng nhập';
+ if(!CFG_OK){authMsg('Chưa cấu hình Supabase: mở index.html và điền SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY.','err');b.disabled=true;return}
+ authMsg(DENY,DENY?'err':'');DENY='';$('#loginPw').value=''}
+function teardown(){if(CH&&sb){try{sb.removeChannel(CH)}catch(e){}}CH=null;ME=null;DB=null;SNAP=new Map();META=new Map();MEMBERS=[];MEM_LOADED=false;DIRTY=false;clearTimeout(SYNC_T);delete PAGES.members;S.page='dashboard';S.tab={};S.f={};closeModal();$('#main').innerHTML='';$('#tree').innerHTML='';$('#nav').innerHTML=''}
+async function enter(user){
+ authMsg('Đang kiểm tra quyền truy cập…','info');
+ const{data:m,error}=await sb.from('members').select('*').eq('user_id',user.id).maybeSingle();
+ if(error||!m||!m.active){DENY=error?'Không kiểm tra được quyền truy cập: '+error.message:'Tài khoản này chưa có trong danh sách thành viên đang hoạt động. Vui lòng liên hệ quản trị viên.';await sb.auth.signOut();return}
+ ME={id:user.id,email:m.email,name:m.display_name,role:m.role,perms:m.perms||{}};
+ authMsg('Đang tải dữ liệu…','info');
+ try{await loadAll(false)}catch(e){DENY='Không tải được dữ liệu: '+(e.message||e);await sb.auth.signOut();return}
+ if(isAdmin())PAGES.members=MEMBERS_PAGE;
+ $('#whoTxt').textContent=ME.name+' · '+roleLabel(ME.role);setSync('ok');
+ document.body.classList.add('authed');authMsg('');render();subscribe()}
+async function boot(){
+ if(!CFG_OK){showLogin();return}
+ sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
+ sb.auth.onAuthStateChange(ev=>{if(ev==='SIGNED_OUT')setTimeout(()=>{teardown();showLogin()},0)});
+ $('#loginForm').addEventListener('submit',async e=>{e.preventDefault();const b=$('#loginBtn');b.disabled=true;b.textContent='Đang đăng nhập…';authMsg('');
+  const{data,error}=await sb.auth.signInWithPassword({email:$('#loginEmail').value.trim(),password:$('#loginPw').value});
+  if(error){b.disabled=false;b.textContent='Đăng nhập';authMsg(/invalid login/i.test(error.message)?'Email hoặc mật khẩu không đúng.':'Không đăng nhập được: '+error.message,'err');return}
+  await enter(data.user)});
+ const{data:{session}}=await sb.auth.getSession();
+ if(session)await enter(session.user);else showLogin()}
+
+/* chặn thao tác không đủ quyền ở mọi điểm gọi (nút bị ẩn + chặn thêm ở đây) */
+Object.keys(ACT).forEach(k=>{const f=ACT[k];ACT[k]=function(...a){if(!canAct(k)){toast('Bạn không có quyền thực hiện thao tác này','err');return}return f.apply(this,a)}});
+{const f=CHG.allocMode;CHG.allocMode=v=>{if(!isAdmin()){toast('Chỉ Quản trị viên được đổi cách phân bổ chi phí chung','err');render();return}f(v)}}
+
+/* ---------- boot ---------- */
+$('#logo').innerHTML=ic('ball',24);$('#ic-folder').innerHTML=ic('folder',18);$('#ic-cal').innerHTML=ic('folder',16);$('#ic-bell').innerHTML=ic('bell',18);$('#ic-dl').innerHTML=ic('dl',17);$('#ic-save').innerHTML=ic('save',17);$('#ic-user').innerHTML=ic('user',17);$('#ic-key').innerHTML=ic('key',17);$('#ic-out').innerHTML=ic('logout',17);$('#authLogo').innerHTML=ic('ball',30);
+boot();
+</script>
+</body>
+</html>
