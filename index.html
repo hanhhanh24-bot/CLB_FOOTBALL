@@ -16,8 +16,8 @@
    SUPABASE_PUBLISHABLE_KEY  : khóa "Publishable key" (sb_publishable_...) – được phép để công khai.
    TUYỆT ĐỐI KHÔNG dán secret key / service_role key vào file này.
    ===================================================================== */
-const SUPABASE_URL = 'https://qhwaojhkiwdoozwybwuh.supabase.co';
-const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_4jMxBzw6gpqBSqSJKHiTtQ_gruGOKPr';
+const SUPABASE_URL = 'https://YOUR-PROJECT-REF.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'YOUR-SUPABASE-PUBLISHABLE-KEY';
 </script>
 <style>
 :root{--g:#087C45;--gd:#075B35;--navy:#142D4E;--navy2:#0E2340;--mint:#EAF6EF;--amber:#F59E0B;--red:#E5484D;--bg:#F4F7F5;--ink:#122A1F;--mut:#62756B;--line:#DCE6E0;--navw:212px;--treew:252px;--r:12px}
@@ -1109,33 +1109,31 @@ async function loadMembers(){const{data,error}=await sb.from('members').select('
 const permBoxes=p=>Object.keys(PERM_LABEL).map(k=>`<label class="chk"><input type="checkbox" name="p_${k}" value="1" ${p&&p[k]===true?'checked':''}> ${PERM_LABEL[k]}</label>`).join('');
 const permsFrom=v=>{const o={};Object.keys(PERM_LABEL).forEach(k=>o[k]=v['p_'+k]==='1');return o};
 function memForm(m){const self=m&&m.user_id===ME.id;
- return fld('email','Email đăng nhập',m?m.email:'',{type:'email',req:1,cls:'full',attrs:m?'readonly':'',help:m?'':'Dashboard sẽ tạo tài khoản và hiển thị mật khẩu tạm để chị gửi riêng.'})
+ return fld('email','Email đăng nhập',m.email,{type:'email',req:1,cls:'full',attrs:'readonly'})
  +fld('name','Tên hiển thị (ghi vào Người nhập / Người chỉnh sửa)',m?m.display_name:'',{req:1,cls:'full'})
  +fld('role','Vai trò',m?m.role:'staff',{type:'select',options:[['staff','Nhân viên'],['admin','Quản trị viên']],attrs:self?'disabled':''})
  +(m?fld('active','Trạng thái',m.active?'1':'0',{type:'select',options:[['1','Đang hoạt động'],['0','Khóa (không truy cập được dữ liệu)']],attrs:self?'disabled':''}):'')
  +`<div class="fld full"><span>Quyền chỉnh sửa của Nhân viên <small class="muted">(Quản trị viên luôn có đủ quyền; mọi thành viên đều xem được dữ liệu)</small></span><div style="display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:4px">${permBoxes(m?m.perms:{receipts:true,expenses:true,academy:true,hr:false})}</div></div>`
  +(self?`<div class="note info full">Bạn không thể tự đổi vai trò hoặc khóa chính mình.</div>`:'')}
-ACT.memAdd=()=>modal('Thêm thành viên',memForm(null),(values,form)=>{
+ACT.memAdd=()=>modal('Thêm thành viên',
+ fld('email','Email đăng nhập','',{type:'email',req:1,cls:'full',help:'Tài khoản mới dùng mật khẩu mặc định và có vai trò Nhân viên.'}),
+ (values,form)=>{
  const button=form.querySelector('[type=submit]');
  button.disabled=true;
  (async()=>{
   try{
    const {data,error}=await sb.functions.invoke('football-member-admin',{
-    body:{email:values.email,name:values.name,role:values.role,perms:permsFrom(values)}
+    body:{email:values.email}
    });
    if(error){
     const detail=await error.context?.json?.().catch(()=>null);
     toast(detail?.error||'Chưa tạo được thành viên. Kiểm tra cấu hình Edge Function.','err');
     return;
    }
-   if(!data?.password||!data.email){toast('Không nhận được thông tin tài khoản.','err');return}
-   modal('Tài khoản đã được tạo',
-    `<div class="note info full">Gửi riêng thông tin bên dưới. Thành viên đăng nhập rồi chọn Đổi mật khẩu.</div>
-     <label class="fld full"><span>Email</span><input readonly value="${esc(data.email)}"></label>
-     <label class="fld full"><span>Mật khẩu tạm</span><input readonly value="${esc(data.password)}"></label>`,
-    ()=>{},{ok:'Đóng'});
+   if(!data?.email){toast('Không xác nhận được tài khoản mới.','err');return}
+   if(form.isConnected)closeModal();
+   toast('Đã thêm thành viên: '+data.email);
    await loadMembers();
-   if(ME&&S.page==='members')render();
   }catch(e){toast('Không kết nối được. Kiểm tra danh sách trước khi thử lại.','err')}
   finally{button.disabled=false}
  })();
@@ -1149,7 +1147,7 @@ ACT.memRefresh=()=>loadMembers();
 const MEMBERS_PAGE={t:'Thành viên',i:'user',after(){if(!MEM_LOADED)loadMembers()},r(){
  const rows=MEMBERS.map(m=>`<tr><td><b>${esc(m.display_name)}</b>${m.user_id===ME.id?' '+B('Bạn','blue'):''}<br><span class="muted">${esc(m.email)}</span></td><td>${m.role==='admin'?B('Quản trị viên','green'):B('Nhân viên','blue')}</td><td>${m.active?B('Đang hoạt động','green'):B('Đã khóa','red')}</td><td>${m.role==='admin'?'<span class="muted">Toàn quyền</span>':Object.keys(PERM_LABEL).filter(k=>m.perms&&m.perms[k]===true).map(k=>B(PERM_LABEL[k],'gray')).join(' ')||'<span class="muted">Chỉ xem</span>'}</td><td class="act">${ab('memEdit','edit','Sửa',`data-id="${m.user_id}"`)}</td></tr>`).join('');
  return phead('Quản lý thành viên','Chỉ tài khoản có trong danh sách này (và đang hoạt động) mới truy cập được dữ liệu',`<button class="btn primary" data-act="memAdd">${ic('plus',16)}Thêm thành viên</button><button class="btn ghost" data-act="memRefresh">${ic('refresh',16)}Làm mới</button>`)
- +`<div class="note info">Bấm <b>Thêm thành viên</b> để cấp tài khoản ngay tại đây. Gửi riêng link dashboard, email và mật khẩu tạm cho thành viên. Để thu hồi quyền truy cập, đặt trạng thái <b>Khóa</b>.</div>`
+ +`<div class="note info">Bấm <b>Thêm thành viên</b> để cấp tài khoản ngay tại đây. Gửi riêng link dashboard và mật khẩu mặc định cho thành viên. Để thu hồi quyền truy cập, đặt trạng thái <b>Khóa</b>.</div>`
  +`<div class="card">${tbl(['Thành viên','Vai trò','Trạng thái','Quyền chỉnh sửa',''],rows)}</div>`}};
 
 /* ---------- màn hình đăng nhập & khởi động ---------- */
